@@ -45,6 +45,8 @@
   .steps{font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.9;margin:0 0 20px;list-style:none;padding:0;}
   .steps b{color:var(--ink);}
   .roster{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;min-height:38px;}
+  .lobby-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .end-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
   .tag{font-size:14px;padding:7px 13px;border-radius:99px;background:var(--card-2);border:1px solid var(--line-strong);
     animation:pop .25s ease both;}
   .tag.done{border-color:var(--green);color:var(--green);}
@@ -128,7 +130,10 @@
         <li>3 · <b>Répondez</b> depuis votre mobile</li>
       </ul>
       <div class="roster" id="roster"><span class="empty">En attente de participants…</span></div>
-      <button class="btn btn-primary" id="startBtn" disabled>Démarrer le quiz</button>
+      <div class="lobby-actions">
+        <button class="btn btn-primary" id="startBtn" disabled>Démarrer le quiz</button>
+        <button class="btn btn-ghost" id="clearBtnLobby" style="display:none">Vider la salle</button>
+      </div>
     </div>
   </section>
 
@@ -147,7 +152,10 @@
     <div class="kicker" style="text-align:center">Classement final</div>
     <div class="podium" id="podium"></div>
     <div class="lb" id="fullBoard"></div>
-    <button class="btn btn-ghost" id="resetBtn">↺ Nouvelle partie</button>
+    <div class="end-actions">
+      <button class="btn btn-primary" id="resetBtn">↺ Rejouer · mêmes joueurs</button>
+      <button class="btn btn-ghost" id="clearBtn">Vider la salle · nouveau groupe</button>
+    </div>
   </section>
 
   <p class="foot">Sources : Gallup · Lab des Futurs × Ipsos · Capstan/SFR Business · Syntec Numérique — millésime 2025-2026</p>
@@ -187,6 +195,7 @@ function renderLobby(){
   else STATE.roster.forEach(p=>{ const t=document.createElement('span'); t.className='tag'; t.textContent=p.pseudo; r.appendChild(t); });
   $('startBtn').disabled = STATE.roster.length===0;
   $('startBtn').textContent = STATE.roster.length ? ('Démarrer le quiz · '+STATE.roster.length+' joueur'+(STATE.roster.length>1?'s':'')) : 'Démarrer le quiz';
+  $('clearBtnLobby').style.display = STATE.roster.length ? 'inline-block' : 'none';
 }
 
 function renderLive(){
@@ -279,6 +288,9 @@ function renderEnd(){
 
 $('startBtn').onclick=()=>socket.emit('host:start');
 $('resetBtn').onclick=()=>socket.emit('host:reset');
+function doClear(){ if(confirm('Vider la salle et retirer TOUS les participants ? (à faire pour un nouveau groupe)')) socket.emit('host:clear'); }
+$('clearBtn').onclick=doClear;
+$('clearBtnLobby').onclick=doClear;
 
 function esc(s){const d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;}
 </script>

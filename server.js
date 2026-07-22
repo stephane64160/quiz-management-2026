@@ -171,6 +171,15 @@ function resetGame() {
   io.to('players').emit('game:reset');
   broadcastHost();
 }
+function clearRoom() {
+  // Vide entierement la salle : retire tous les participants (nouveau groupe).
+  game.phase = 'lobby';
+  game.currentQ = -1;
+  game.startedAt = 0;
+  game.players.clear();
+  io.to('players').emit('game:cleared');
+  broadcastHost();
+}
 
 // ---------------------------------------------------------------------
 //  Sockets
@@ -187,6 +196,7 @@ io.on('connection', (socket) => {
   socket.on('host:reveal', () => { if (hosts.has(socket.id)) doReveal(); });
   socket.on('host:next', () => { if (hosts.has(socket.id)) nextQuestion(); });
   socket.on('host:reset', () => { if (hosts.has(socket.id)) resetGame(); });
+  socket.on('host:clear', () => { if (hosts.has(socket.id)) clearRoom(); });
 
   // --- Joueur ---
   socket.on('player:hello', ({ playerId, pseudo } = {}) => {
@@ -243,7 +253,13 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     hosts.delete(socket.id);
-    // Les joueurs sont conserves (reconnexion possible via leur playerId memorise).
+    // En salle d'attente : on retire le joueur qui quitte (compteur juste).
+    // Pendant une partie : on le conserve pour permettre la reconnexion.
+    const id = socket.data.playerId;
+    if (id && game.phase === 'lobby') {
+      const p = game.players.get(id);
+      if (p && p.socketId === socket.id) game.players.delete(id);
+    }
     broadcastHost();
   });
 });

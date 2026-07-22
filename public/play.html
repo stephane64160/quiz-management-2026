@@ -269,8 +269,18 @@ socket.on('game:over',d=>{
   show('end');
 });
 
-// ----- Reset -----
+// ----- Reset (rejouer, mêmes joueurs) -----
 socket.on('game:reset',()=>{ show('wait'); setWait('Nouvelle partie','En attente du démarrage par l\'animateur…'); });
+
+// ----- Salle vidée (nouveau groupe) : retour à l'écran pseudo -----
+socket.on('game:cleared',()=>{
+  localStorage.removeItem('quizPlayerId'); playerId='';
+  curQ=null; selected=[]; answered=false; myAnswer=null;
+  $('meTag').classList.add('hidden');
+  $('joinBtn').disabled = !$('pseudo').value.trim();
+  show('join');
+  toast('Session réinitialisée — reconnectez-vous');
+});
 
 function setWait(title,msg){ $('waitTitle').textContent=title; $('waitMsg').textContent=msg; }
 </script>
