@@ -125,13 +125,22 @@
   .wall-prompt{font-family:var(--serif);font-size:clamp(22px,3.4vw,30px);margin:0;text-wrap:balance;}
   .wall-sub{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin:6px 0 0;}
   .wall-sub b{color:var(--gold);}
-  .cloud{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:center;min-height:280px;
-    padding:24px;margin-top:12px;border:1px dashed var(--line-strong);border-radius:16px;background:var(--paper);}
-  .cloud .w{font-family:var(--serif);line-height:1.05;color:var(--ink);animation:wpop .4s cubic-bezier(.2,.8,.2,1) both;white-space:nowrap;}
-  .cloud .w .n{font-family:var(--mono);font-size:.5em;color:var(--muted);vertical-align:super;margin-left:2px;}
-  @keyframes wpop{from{opacity:0;transform:scale(.6);}to{opacity:1;transform:scale(1);}}
-  .cloud .empty{align-self:center;}
-  .wall-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+  .wall-shapes{display:flex;gap:8px;flex-wrap:wrap;}
+  .shape-btn{font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;padding:8px 14px;border-radius:99px;
+    border:1px solid var(--line-strong);background:var(--card-2);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;}
+  .shape-btn:hover{border-color:var(--gold);color:var(--ink);}
+  .shape-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+  .cloud{position:relative;height:clamp(360px,55vh,560px);margin-top:14px;border:1px dashed var(--line-strong);border-radius:16px;
+    background:radial-gradient(circle at 50% 42%, rgba(226,173,82,.08), transparent 60%), var(--paper);overflow:hidden;}
+  .cloud .cloudbg{position:absolute;inset:0;z-index:0;pointer-events:none;}
+  .cloud .w{position:absolute;white-space:nowrap;line-height:1;z-index:1;transform-origin:center center;
+    transition:left .55s cubic-bezier(.2,.85,.2,1),top .55s cubic-bezier(.2,.85,.2,1),font-size .4s;will-change:left,top;}
+  .cloud .w .inner{display:inline-block;transform-origin:center center;}
+  .cloud .w.new .inner{animation:wpop .55s cubic-bezier(.2,.9,.25,1) both;}
+  .cloud .w .n{font-size:.5em;opacity:.65;vertical-align:super;margin-left:1px;}
+  @keyframes wpop{0%{opacity:0;transform:scale(.15) rotate(-10deg);}70%{opacity:1;transform:scale(1.14);}100%{opacity:1;transform:scale(1);}}
+  .cloud .cempty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-family:var(--mono);font-size:13px;}
+  .wall-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;align-items:center;}
 
   .foot{text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:26px;}
 </style>
@@ -204,8 +213,14 @@
         <p class="wall-prompt" id="wallPrompt">Mur de mots</p>
         <p class="wall-sub" id="wallSub"></p>
       </div>
+      <div class="wall-shapes" id="shapeBtns">
+        <button class="shape-btn active" data-shape="robot">🤖 Robot</button>
+        <button class="shape-btn" data-shape="chip">🔲 Puce</button>
+        <button class="shape-btn" data-shape="ia">« IA »</button>
+        <button class="shape-btn" data-shape="brain">🧠 Cerveau</button>
+      </div>
     </div>
-    <div class="cloud" id="cloud"><span class="empty">En attente des premiers mots…</span></div>
+    <div class="cloud" id="cloud"><canvas class="cloudbg" id="cloudBg"></canvas><span class="cempty">En attente des premiers mots…</span></div>
     <div class="wall-actions">
       <button class="btn btn-ghost" id="wallClearBtn">Effacer le mur</button>
     </div>
@@ -225,7 +240,7 @@ let STATE=null, renderedQ=-1;
 socket.on('connect',()=>socket.emit('host:hello'));
 socket.on('host:state',s=>{STATE=s;render();});
 socket.on('host:aggregate',a=>{ if(STATE&&STATE.mode==='quiz'&&STATE.quiz.phase==='question'&&a.qIndex===STATE.quiz.currentQ){STATE.aggregate=a;updateBars(a,null);updateLiveCount(a);} });
-socket.on('host:wall',w=>{ if(STATE&&STATE.mode==='wordwall'){STATE.wall.items=w.items;STATE.wall.totalWords=w.totalWords;renderCloud();} });
+socket.on('host:wall',w=>{ if(STATE&&STATE.mode==='wordwall'){STATE.wall.items=w.items;STATE.wall.totalWords=w.totalWords;scheduleCloud();} });
 
 // QR (une fois)
 fetch('/api/join-info').then(r=>r.json()).then(d=>{
@@ -340,31 +355,159 @@ function renderEnd(){
     row.querySelector('.nm').textContent=e.pseudo+'  ·  '+e.correctCount+'/'+STATE.quiz.totalQ+' bonnes'; fb.appendChild(row); });
 }
 
-/* ---- Word wall ---- */
-function renderWall(){
-  $('wallPrompt').textContent=STATE.wall.prompt;
-  renderCloud();
+/* ---- Word wall : nuage en forme d'objet IA ---- */
+let curShape='robot';
+const wordEls=new Map();                 // texte -> element (reutilise pour animer)
+const measCanvas=document.createElement('canvas');
+const measCtx=measCanvas.getContext('2d');
+
+// polices variees (fonts systeme largement disponibles)
+const FONTS=[
+  {f:"Georgia, serif",w:700},
+  {f:"'Arial Black','Arial',sans-serif",w:900},
+  {f:"'Courier New',monospace",w:700},
+  {f:"'Trebuchet MS',sans-serif",w:700},
+  {f:"'Comic Sans MS','Comic Sans',cursive",w:700},
+  {f:"'Times New Roman',serif",w:700},
+  {f:"Impact,'Haettenschweiler',sans-serif",w:400},
+  {f:"'Palatino Linotype','Book Antiqua',serif",w:700},
+  {f:"Verdana,Geneva,sans-serif",w:700},
+  {f:"'Lucida Console','Courier New',monospace",w:700}
+];
+// palette coloree (solides + degrades)
+const PAINTS=[
+  {c:'#e2ad52'},{c:'#4de1c1'},{c:'#5cc8ff'},{c:'#ff8fab'},{c:'#c792ea'},
+  {c:'#8ce99a'},{c:'#ffd166'},{c:'#ff9f68'},{c:'#7aa2ff'},
+  {g:['#e2ad52','#ff8fab']},{g:['#5cc8ff','#c792ea']},{g:['#4de1c1','#5cc8ff']},{g:['#ffd166','#ff9f68']}
+];
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function pick(arr,h){return arr[(((h>>>0)%arr.length)+arr.length)%arr.length];}
+
+// --- Formes (silhouettes remplies en blanc sur un canvas masque) ---
+function fit(ctx,W,H,dw,dh,pad,draw){ const s=Math.min((W-2*pad)/dw,(H-2*pad)/dh); const ox=(W-dw*s)/2, oy=(H-dh*s)/2;
+  ctx.save(); ctx.translate(ox,oy); ctx.scale(s,s); draw(ctx); ctx.restore(); }
+function rr(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); c.fill(); }
+function drawRobot(ctx,W,H){ fit(ctx,W,H,200,215,16,c=>{
+  c.beginPath(); c.arc(100,16,12,0,7); c.fill();     // antenne (boule)
+  c.fillRect(94,20,12,26);                            // tige antenne
+  rr(c,26,44,148,122,24);                             // tete
+  rr(c,4,82,22,50,9); rr(c,174,82,22,50,9);           // oreilles
+  c.fillRect(80,166,40,12);                           // cou
+  rr(c,44,178,112,34,12);                             // buste
+}); }
+function drawChip(ctx,W,H){ fit(ctx,W,H,200,200,18,c=>{
+  for(let i=0;i<5;i++){ const p=42+i*29;
+    c.fillRect(p-6,8,12,26); c.fillRect(p-6,166,12,26);   // pattes haut/bas
+    c.fillRect(8,p-6,26,12); c.fillRect(166,p-6,26,12);   // pattes gauche/droite
+  }
+  rr(c,34,34,132,132,18);                                 // corps
+}); }
+function drawBrain(ctx,W,H){ fit(ctx,W,H,200,180,16,c=>{
+  rr(c,26,34,148,104,52);                                 // masse
+  c.beginPath(); c.arc(72,44,34,0,7); c.fill();
+  c.beginPath(); c.arc(128,44,34,0,7); c.fill();
+  c.beginPath(); c.arc(100,52,30,0,7); c.fill();          // bosses
+  rr(c,86,130,28,36,10);                                  // tronc cerebral
+}); }
+function drawIA(ctx,W,H){ ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
+  let fs=H*0.95; ctx.font="900 "+fs+"px 'Arial Black',Arial,sans-serif";
+  while(ctx.measureText('IA').width>W*0.9 && fs>20){ fs-=6; ctx.font="900 "+fs+"px 'Arial Black',Arial,sans-serif"; }
+  ctx.fillText('IA',W/2,H/2+fs*0.03); ctx.restore(); }
+function shapeDrawer(name){ return ({robot:drawRobot,chip:drawChip,brain:drawBrain,ia:drawIA})[name]||drawRobot; }
+function drawShapeBg(W,H){
+  const c=$('cloudBg'); if(!c) return; c.width=W; c.height=H; const x=c.getContext('2d');
+  x.clearRect(0,0,W,H); x.save(); x.fillStyle='rgba(226,173,82,0.10)'; shapeDrawer(curShape)(x,W,H); x.restore();
 }
+
+function buildMask(W,H,GS,drawer){
+  const mc=document.createElement('canvas'); mc.width=W; mc.height=H; const mx=mc.getContext('2d');
+  mx.fillStyle='#fff'; drawer(mx,W,H);
+  const data=mx.getImageData(0,0,W,H).data;
+  const gw=Math.ceil(W/GS), gh=Math.ceil(H/GS); const grid=new Uint8Array(gw*gh);
+  for(let gy=0;gy<gh;gy++) for(let gx=0;gx<gw;gx++){
+    const px=Math.min(W-1,(gx*GS+(GS>>1))|0), py=Math.min(H-1,(gy*GS+(GS>>1))|0);
+    if(data[(py*W+px)*4+3]>128) grid[gy*gw+gx]=1;
+  }
+  return {grid,gw,gh,GS};
+}
+function fitsGrid(x,y,bw,bh,M,occ){ const g=M.GS;
+  const x0=Math.floor(x/g),y0=Math.floor(y/g),x1=Math.ceil((x+bw)/g),y1=Math.ceil((y+bh)/g);
+  if(x0<0||y0<0||x1>M.gw||y1>M.gh) return false;
+  for(let gy=y0;gy<y1;gy++) for(let gx=x0;gx<x1;gx++){ const i=gy*M.gw+gx; if(!M.grid[i]||occ[i]) return false; }
+  return true;
+}
+function markGrid(x,y,bw,bh,M,occ){ const g=M.GS;
+  const x0=Math.floor(x/g),y0=Math.floor(y/g),x1=Math.ceil((x+bw)/g),y1=Math.ceil((y+bh)/g);
+  for(let gy=y0;gy<y1;gy++) for(let gx=x0;gx<x1;gx++) occ[gy*M.gw+gx]=1;
+}
+function buildCandidates(M,cx,cy){
+  const c=[]; const g=M.GS;
+  for(let gy=0;gy<M.gh;gy++) for(let gx=0;gx<M.gw;gx++){ if(M.grid[gy*M.gw+gx]){
+    const x=(gx+0.5)*g, y=(gy+0.5)*g; c.push({x,y,d:(x-cx)*(x-cx)+(y-cy)*(y-cy)}); } }
+  c.sort((a,b)=>a.d-b.d); return c;
+}
+function findSpot(cands,bw,bh,M,occ){
+  for(let k=0;k<cands.length;k++){ const p=cands[k]; const x=p.x-bw/2, y=p.y-bh/2;
+    if(fitsGrid(x,y,bw,bh,M,occ)) return {x,y}; }
+  return null;
+}
+function layoutCloud(items,W,H){
+  const GS=6, M=buildMask(W,H,GS,shapeDrawer(curShape)), occ=new Uint8Array(M.gw*M.gh);
+  const maxC=Math.max(...items.map(i=>i.count),1), cx=W/2, cy=H/2, placed=[];
+  const cands=buildCandidates(M,cx,cy);
+  for(const it of items){
+    const hh=hashStr(it.text);
+    const paint=pick(PAINTS,hh), fontDef=pick(FONTS,(hh>>>3)), rot=((hh>>>7)&1?1:-1)*((hh>>>4)%16);
+    const base=Math.round(13+Math.pow(it.count/maxC,0.62)*29);  // 13 -> 42px
+    const label=it.text+(it.count>1?(' ×'+it.count):'');
+    let pos=null, used=base;
+    for(let att=0; att<6 && !pos; att++){
+      const fs=Math.max(11,Math.round(base*(1-att*0.16)));
+      measCtx.font=fontDef.w+' '+fs+'px '+fontDef.f;
+      const tw=measCtx.measureText(label).width, th=fs*1.02;
+      const bw=tw+7, bh=th+5;          // boite serree (rotation ignoree => remplissage dense)
+      const p=findSpot(cands,bw,bh,M,occ);
+      if(p){ markGrid(p.x,p.y,bw,bh,M,occ); pos={x:p.x+bw/2,y:p.y+bh/2}; used=fs; }
+    }
+    if(pos) placed.push({text:it.text,count:it.count,x:pos.x,y:pos.y,size:used,paint,fontDef,rot});
+  }
+  return placed;
+}
+function renderWall(){ $('wallPrompt').textContent=STATE.wall.prompt; renderCloud(); }
 function renderCloud(){
-  const items=STATE.wall.items||[];
-  $('wallSub').innerHTML='<b>'+(STATE.wall.totalWords||0)+'</b> mot'+((STATE.wall.totalWords||0)>1?'s':'')+' envoyé'+((STATE.wall.totalWords||0)>1?'s':'')+' · <b>'+items.length+'</b> unique'+(items.length>1?'s':'');
-  const cloud=$('cloud');
-  if(!items.length){ cloud.innerHTML='<span class="empty">En attente des premiers mots…</span>'; return; }
-  const max=Math.max(...items.map(i=>i.count));
-  const min=Math.min(...items.map(i=>i.count));
-  cloud.innerHTML='';
-  items.forEach(it=>{
-    const t=max===min?1:(it.count-min)/(max-min);
-    const size=Math.round(17+t*40);              // 17px → 57px
-    const light=55+Math.round(t*30);             // couleur : plus vif si fréquent
-    const el=document.createElement('span'); el.className='w';
-    el.style.fontSize=size+'px';
-    el.style.color = it.count>min ? 'color-mix(in srgb, var(--gold) '+light+'%, var(--ink))' : 'var(--muted)';
-    el.textContent=it.text;
-    if(it.count>1){ const n=document.createElement('span'); n.className='n'; n.textContent='×'+it.count; el.appendChild(n); }
-    cloud.appendChild(el);
+  const items=(STATE.wall.items||[]).slice(0,110);
+  const tw=STATE.wall.totalWords||0;
+  $('wallSub').innerHTML='<b>'+tw+'</b> mot'+(tw>1?'s':'')+' · <b>'+items.length+'</b> unique'+(items.length>1?'s':'');
+  const cloud=$('cloud'); const empty=cloud.querySelector('.cempty');
+  const W=cloud.clientWidth||820, H=cloud.clientHeight||460;
+  drawShapeBg(W,H);
+  if(!items.length){ wordEls.forEach(el=>el.remove()); wordEls.clear();
+    if(!empty){ const e=document.createElement('span'); e.className='cempty'; e.textContent='En attente des premiers mots…'; cloud.appendChild(e); }
+    return; }
+  if(empty) empty.remove();
+  const placed=layoutCloud(items,W,H); const seen=new Set();
+  placed.forEach(p=>{
+    seen.add(p.text);
+    let el=wordEls.get(p.text), isNew=false;
+    if(!el){ isNew=true; el=document.createElement('span'); el.className='w';
+      el.innerHTML='<span class="inner"><span class="tx"></span><span class="n"></span></span>';
+      cloud.appendChild(el); wordEls.set(p.text,el); }
+    const inner=el.firstChild;
+    inner.querySelector('.tx').textContent=p.text;
+    inner.querySelector('.n').textContent=p.count>1?('×'+p.count):'';
+    el.style.fontFamily=p.fontDef.f; el.style.fontWeight=p.fontDef.w; el.style.fontSize=p.size+'px';
+    if(p.paint.g){ el.style.color='transparent'; el.style.webkitTextFillColor='transparent';
+      el.style.backgroundImage='linear-gradient(92deg,'+p.paint.g[0]+','+p.paint.g[1]+')'; el.style.webkitBackgroundClip='text'; el.style.backgroundClip='text'; }
+    else { el.style.backgroundImage='none'; el.style.webkitTextFillColor=p.paint.c; el.style.color=p.paint.c; }
+    el.style.left=p.x+'px'; el.style.top=p.y+'px';
+    el.style.transform='translate(-50%,-50%) rotate('+p.rot+'deg)';
+    if(isNew){ el.classList.add('new'); setTimeout(()=>el.classList.remove('new'),650); }
   });
+  wordEls.forEach((el,txt)=>{ if(!seen.has(txt)){ el.remove(); wordEls.delete(txt); } });
 }
+let cloudTimer=0, cloudPending=false;
+function scheduleCloud(){ if(cloudTimer){cloudPending=true;return;} renderCloud();
+  cloudTimer=setTimeout(()=>{cloudTimer=0; if(cloudPending){cloudPending=false; scheduleCloud();}},450); }
 
 /* ---- Boutons ---- */
 $('startBtn').onclick=()=>socket.emit('host:start');
@@ -374,6 +517,16 @@ $('toMenuBtn').onclick=()=>socket.emit('host:menu');
 $('wallClearBtn').onclick=()=>{ if(confirm('Effacer tous les mots du mur ?')) socket.emit('host:wallClear'); };
 function doClear(){ if(confirm('Vider la salle et retirer TOUS les participants ? (pour un nouveau groupe)')) socket.emit('host:clear'); }
 $('clearBtnLobby').onclick=doClear;
+
+// Sélecteur de forme du mur de mots (recalcul local, pas de serveur)
+document.querySelectorAll('#shapeBtns .shape-btn').forEach(b=>{
+  b.onclick=()=>{ curShape=b.dataset.shape;
+    document.querySelectorAll('#shapeBtns .shape-btn').forEach(x=>x.classList.toggle('active',x===b));
+    if(STATE&&STATE.mode==='wordwall') renderCloud();
+  };
+});
+// Recalcul du nuage au redimensionnement de la fenêtre
+let rszT; window.addEventListener('resize',()=>{ clearTimeout(rszT); rszT=setTimeout(()=>{ if(STATE&&STATE.mode==='wordwall') renderCloud(); },300); });
 </script>
 </body>
 </html>
