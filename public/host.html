@@ -288,7 +288,7 @@ const LETTERS=['A','B','C','D','E','F'];
 const $=id=>document.getElementById(id);
 const esc=s=>{const d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;};
 const socket=io();
-let STATE=null, renderedQ=-1;
+let STATE=null, renderedQ=-1, autoRevealQ=-1, autoTimer=0;
 
 socket.on('connect',()=>socket.emit('host:hello'));
 socket.on('host:state',s=>{STATE=s;render();});
@@ -350,6 +350,7 @@ function renderQuizLobby(){
 function renderLive(){
   const q=STATE.question; if(!q) return;
   const isReveal=STATE.quiz.phase==='reveal';
+  if(!isReveal){ clearTimeout(autoTimer); closeAnim(); }   // nouvelle question : on ferme toute animation en cours
   if(renderedQ!==STATE.quiz.currentQ){
     renderedQ=STATE.quiz.currentQ;
     $('qhead').innerHTML='<span class="chip theme">'+esc(q.theme)+'</span>'+
@@ -372,8 +373,12 @@ function renderLive(){
     const hasAnim=rv.anim&&rv.anim.beats&&rv.anim.beats.length;
     slot.innerHTML='<div class="reveal"><div><span class="fig">'+esc(rv.fig)+'</span> <span class="lab">'+esc(rv.figLabel)+'</span></div>'+
       '<p class="exp">'+esc(rv.explain)+'</p><div class="src">Source : '+esc(rv.source)+'</div>'+
-      (hasAnim?'<button class="btn btn-primary anim-launch" id="animLaunch">▶ Explication animée · ~15 s</button>':'')+'</div>';
-    if(hasAnim){ const al=$('animLaunch'); al.onclick=()=>playAnim(rv.anim, rv.fig); }
+      (hasAnim?'<button class="btn btn-ghost anim-launch" id="animLaunch">↺ Revoir l\'explication animée</button>':'')+'</div>';
+    if(hasAnim){ const al=$('animLaunch'); al.onclick=()=>playAnim(rv.anim, rv.fig);
+      // lancement automatique : une seule fois par question, peu après l'affichage de la réponse
+      if(autoRevealQ!==STATE.quiz.currentQ){ autoRevealQ=STATE.quiz.currentQ; clearTimeout(autoTimer);
+        autoTimer=setTimeout(()=>playAnim(rv.anim, rv.fig), 1300); }
+    }
   } else slot.innerHTML='';
 
   const c=$('controls'); c.innerHTML='';
