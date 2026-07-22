@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c0f16">
+<title>Quiz Management 2026</title>
+<style>
+  :root{
+    --paper:#0c0f16; --card:#151a24; --card-2:#1c2230; --ink:#e8ebf1; --muted:#9aa2af;
+    --line:#262d3a; --line-strong:#333c4c; --gold:#e2ad52; --gold-soft:#2a2313;
+    --green:#37bd85; --green-soft:#12271d; --red:#e86a63; --red-soft:#2c1717;
+    --serif:Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;
+    display:flex;flex-direction:column;
+    padding:max(18px,env(safe-area-inset-top)) 18px max(22px,env(safe-area-inset-bottom));}
+  .wrap{width:100%;max-width:520px;margin:0 auto;flex:1;display:flex;flex-direction:column;}
+  .brand{display:flex;flex-direction:column;gap:2px;margin-bottom:20px;}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;}
+  .brand h1{font-family:var(--serif);font-size:19px;margin:0;font-weight:600;letter-spacing:-.01em;}
+  .me{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .topline{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;
+    box-shadow:0 16px 34px -20px rgba(0,0,0,.7);}
+  .center{flex:1;display:flex;flex-direction:column;justify-content:center;}
+
+  label.fl{font-size:13px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:10px;}
+  input[type=text]{width:100%;background:var(--paper);border:1.5px solid var(--line-strong);color:var(--ink);
+    font-size:19px;font-family:var(--sans);padding:15px 16px;border-radius:12px;outline:none;transition:border-color .15s;}
+  input[type=text]:focus{border-color:var(--gold);}
+  .hintlbl{font-size:12.5px;color:var(--muted);margin:10px 2px 0;}
+
+  .btn{width:100%;font-family:var(--sans);font-size:17px;font-weight:700;padding:16px;border-radius:13px;cursor:pointer;
+    border:1px solid transparent;transition:transform .1s,opacity .15s;margin-top:16px;}
+  .btn:active:not(:disabled){transform:scale(.99);}
+  .btn-primary{background:var(--gold);color:#1a1406;}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+
+  .h2{font-family:var(--serif);font-size:22px;margin:0 0 6px;text-wrap:balance;}
+  .muted{color:var(--muted);font-size:14.5px;margin:0;}
+
+  .qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:99px;
+    border:1px solid var(--line-strong);color:var(--muted);font-weight:600;}
+  .chip.theme{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 40%,var(--line-strong));background:var(--gold-soft);}
+  .chip.multi{border-style:dashed;color:var(--ink);}
+  .question{font-family:var(--serif);font-size:21px;line-height:1.3;margin:0 0 6px;text-wrap:balance;}
+  .subhint{color:var(--muted);font-size:13px;margin:0 0 18px;}
+
+  .options{display:flex;flex-direction:column;gap:11px;}
+  .opt{display:flex;align-items:center;gap:13px;padding:16px;border-radius:13px;border:1.5px solid var(--line-strong);
+    background:var(--card-2);color:var(--ink);font-size:16px;text-align:left;cursor:pointer;width:100%;line-height:1.35;
+    transition:border-color .15s,background .15s,transform .08s;font-family:var(--sans);}
+  .opt:active{transform:scale(.99);}
+  .opt .mk{flex:none;width:26px;height:26px;border:1.5px solid var(--line-strong);display:grid;place-items:center;
+    font-size:14px;color:transparent;transition:all .15s;}
+  .single .opt .mk{border-radius:50%;}
+  .multiq .opt .mk{border-radius:7px;}
+  .opt .lt{font-family:var(--mono);font-weight:700;color:var(--muted);}
+  .opt.sel{border-color:var(--gold);background:var(--gold-soft);}
+  .opt.sel .mk{border-color:var(--gold);background:var(--gold);color:#1a1406;}
+  .opt.sel .lt{color:var(--gold);}
+  .opt:disabled{opacity:1;cursor:default;}
+
+  .waitbox{text-align:center;}
+  .spinner{width:38px;height:38px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;
+    margin:0 auto 18px;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .bigfig{font-family:var(--mono);font-weight:700;font-size:40px;color:var(--gold);line-height:1;}
+
+  .verdict{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;margin-bottom:12px;}
+  .verdict .dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:17px;flex:none;}
+  .verdict.ok{color:var(--green);} .verdict.ok .dot{background:var(--green);}
+  .verdict.ko{color:var(--red);} .verdict.ko .dot{background:var(--red);}
+  .verdict.na{color:var(--muted);} .verdict.na .dot{background:var(--muted);}
+  .pts{font-family:var(--mono);font-size:14px;color:var(--gold);margin:0 0 14px;}
+  .revbox{border-left:3px solid var(--gold);background:var(--card-2);border-radius:0 12px 12px 0;padding:15px 16px;margin-top:6px;}
+  .revbox .exp{font-size:14px;margin:0 0 10px;}
+  .revbox .src{font-family:var(--mono);font-size:11.5px;color:var(--muted);}
+  .rankline{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:14px;text-align:center;}
+  .rankline b{color:var(--gold);}
+
+  .score-final{font-family:var(--serif);font-size:56px;color:var(--gold);line-height:1;font-variant-numeric:tabular-nums;}
+  .podlist{display:flex;flex-direction:column;gap:8px;margin:18px 0 0;text-align:left;}
+  .podlist .r{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:11px 14px;border-radius:10px;
+    background:var(--card-2);border:1px solid var(--line);align-items:center;font-size:14px;}
+  .podlist .r.you{border-color:var(--gold);}
+  .podlist .rk{font-family:var(--mono);color:var(--muted);font-weight:700;}
+  .podlist .sc{font-family:var(--mono);color:var(--gold);}
+  .hidden{display:none !important;}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--card);border:1px solid var(--line-strong);
+    color:var(--ink);padding:12px 18px;border-radius:12px;font-size:14px;box-shadow:0 10px 30px -10px #000;opacity:0;
+    transition:opacity .2s,transform .2s;pointer-events:none;z-index:9;}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(-4px);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topline">
+    <div class="brand">
+      <span class="kicker">Formation Managers · 2026</span>
+      <h1>Le management en France</h1>
+    </div>
+    <span class="me hidden" id="meTag"></span>
+  </div>
+
+  <!-- JOIN -->
+  <section id="join" class="card center">
+    <label class="fl" for="pseudo">Votre pseudo</label>
+    <input type="text" id="pseudo" maxlength="24" autocomplete="off" autocapitalize="words" placeholder="Ex. Alex, Manager42…" enterkeyhint="go">
+    <p class="hintlbl">Visible sur l'écran de l'animateur et au classement.</p>
+    <button class="btn btn-primary" id="joinBtn" disabled>Rejoindre le quiz</button>
+  </section>
+
+  <!-- WAIT -->
+  <section id="wait" class="card center waitbox hidden">
+    <div class="spinner"></div>
+    <p class="h2" id="waitTitle">Vous êtes connecté !</p>
+    <p class="muted" id="waitMsg">En attente du démarrage par l'animateur…</p>
+  </section>
+
+  <!-- QUESTION -->
+  <section id="qview" class="card hidden">
+    <div class="qhead" id="qhead"></div>
+    <p class="question" id="qtext"></p>
+    <p class="subhint" id="qsub"></p>
+    <div class="options" id="opts"></div>
+    <button class="btn btn-primary" id="submitBtn" disabled>Valider</button>
+  </section>
+
+  <!-- REVEAL -->
+  <section id="reveal" class="card center hidden"></section>
+
+  <!-- END -->
+  <section id="end" class="card center hidden"></section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const LETTERS=['A','B','C','D','E','F'];
+const $=id=>document.getElementById(id);
+const socket=io();
+
+let playerId=localStorage.getItem('quizPlayerId')||'';
+let pseudo=localStorage.getItem('quizPseudo')||'';
+let curQ=null, selected=[], answered=false, myAnswer=null;
+
+function show(sec){ ['join','wait','qview','reveal','end'].forEach(s=>$(s).classList.toggle('hidden',s!==sec)); }
+function esc(s){const d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;}
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),1800); }
+
+// ----- Join -----
+$('pseudo').value=pseudo;
+$('joinBtn').disabled=!$('pseudo').value.trim();
+$('pseudo').addEventListener('input',()=>{ $('joinBtn').disabled=!$('pseudo').value.trim(); });
+$('pseudo').addEventListener('keydown',e=>{ if(e.key==='Enter'&&$('pseudo').value.trim()) doJoin(); });
+$('joinBtn').onclick=doJoin;
+function doJoin(){
+  pseudo=$('pseudo').value.trim().slice(0,24);
+  if(!pseudo) return;
+  localStorage.setItem('quizPseudo',pseudo);
+  emitHello();
+  $('meTag').textContent='@'+pseudo; $('meTag').classList.remove('hidden');
+  show('wait');
+}
+function emitHello(){ socket.emit('player:hello',{playerId,pseudo}); }
+
+socket.on('connect',()=>{ if(pseudo) emitHello(); });
+
+socket.on('player:welcome',w=>{
+  playerId=w.id; localStorage.setItem('quizPlayerId',playerId);
+  if(w.pseudo){ pseudo=w.pseudo; $('meTag').textContent='@'+pseudo; $('meTag').classList.remove('hidden'); }
+  if(w.phase==='lobby'){ show('wait'); setWait('Vous êtes connecté !','En attente du démarrage par l\'animateur…'); }
+  else if(w.phase==='question'){
+    if(w.answered){ myAnswer=w.you; show('wait'); setWait('Réponse enregistrée ✓','En attente des autres participants…'); }
+    else { startQuestion(w.question); }
+  }
+  else if(w.phase==='reveal'){ myAnswer=w.you; showReveal(w.reveal,w.you,w.score,null,null); }
+  else if(w.phase==='ended'){ show('wait'); setWait('Partie terminée','Merci d\'avoir participé !'); }
+});
+
+// ----- Nouvelle question -----
+socket.on('question:show',q=>startQuestion(q));
+function startQuestion(q){
+  curQ=q; selected=[]; answered=false; myAnswer=null;
+  $('qhead').innerHTML='<span class="chip theme">'+esc(q.theme)+'</span>'+
+    '<span class="chip '+(q.multi?'multi':'')+'">'+(q.multi?'Plusieurs réponses possibles':'Réponse unique')+'</span>'+
+    '<span class="chip">Q'+(q.index+1)+'/'+q.total+'</span>';
+  $('qtext').textContent=q.q;
+  $('qsub').textContent=q.multi?'Sélectionnez toutes les bonnes réponses, puis validez.':'Sélectionnez une réponse, puis validez.';
+  const box=$('opts'); box.className='options'; box.innerHTML='';
+  $('qview').className='card '+(q.multi?'multiq':'single');
+  q.options.forEach((opt,i)=>{
+    const b=document.createElement('button'); b.className='opt'; b.type='button'; b.dataset.i=i;
+    b.innerHTML='<span class="mk">'+(q.multi?'✓':'●')+'</span><span class="lt">'+LETTERS[i]+'</span><span class="ct"></span>';
+    b.querySelector('.ct').textContent=opt;
+    b.onclick=()=>selectOpt(i);
+    box.appendChild(b);
+  });
+  $('submitBtn').disabled=true; $('submitBtn').textContent='Valider';
+  show('qview');
+}
+function selectOpt(i){
+  if(answered) return;
+  if(curQ.multi){ const p=selected.indexOf(i); if(p<0) selected.push(i); else selected.splice(p,1); }
+  else selected=[i];
+  document.querySelectorAll('#opts .opt').forEach(b=>b.classList.toggle('sel',selected.includes(+b.dataset.i)));
+  $('submitBtn').disabled=selected.length===0;
+}
+$('submitBtn').onclick=()=>{
+  if(answered||!selected.length) return;
+  answered=true; myAnswer={choice:[...selected]};
+  document.querySelectorAll('#opts .opt').forEach(b=>b.disabled=true);
+  $('submitBtn').disabled=true;
+  socket.emit('player:answer',{qIndex:curQ.index,choice:selected});
+};
+socket.on('answer:ok',()=>{ show('wait'); setWait('Réponse enregistrée ✓','En attente des autres participants…'); });
+
+// ----- Reveal -----
+socket.on('question:reveal',r=>showReveal(r,r.you,r.score,r.rank,r.totalPlayers));
+function showReveal(r,you,score,rank,totalPlayers){
+  if(!r) return;
+  const yourChoice = you?you.choice:[];
+  const good = you?you.correct:false;
+  const answeredThis = !!you;
+  const correctLetters = r.correct.map(i=>LETTERS[i]).join(' + ');
+  let vClass = !answeredThis?'na':(good?'ok':'ko');
+  let vIcon = !answeredThis?'–':(good?'✓':'✕');
+  let vText = !answeredThis?'Pas de réponse':(good?'Bonne réponse !':'Raté');
+  const pts = you&&you.pts?you.pts:0;
+  const el=$('reveal');
+  el.innerHTML=
+    '<div class="verdict '+vClass+'"><span class="dot">'+vIcon+'</span>'+vText+'</div>'+
+    (answeredThis&&good?'<p class="pts">+'+pts+' points</p>':'')+
+    '<p class="muted" style="margin:0 0 12px">Bonne réponse : <b style="color:var(--ink)">'+correctLetters+'</b></p>'+
+    '<div class="revbox"><div><span class="bigfig">'+esc(r.fig)+'</span></div>'+
+      '<p class="exp" style="margin-top:8px">'+esc(r.explain)+'</p>'+
+      '<div class="src">Source : '+esc(r.source)+'</div></div>'+
+    (rank?'<p class="rankline">Vous êtes <b>'+rank+'e</b>'+(totalPlayers?' / '+totalPlayers:'')+'  ·  <b>'+(score||0)+'</b> pts</p>':'');
+  show('reveal');
+}
+
+// ----- End -----
+socket.on('game:over',d=>{
+  const el=$('end');
+  let list='';
+  (d.podium||[]).forEach((e,i)=>{
+    const you = e.pseudo===pseudo;
+    list+='<div class="r'+(you?' you':'')+'"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(e.pseudo)+'</span><span class="sc">'+e.score+' pts</span></div>';
+  });
+  el.innerHTML=
+    '<div style="text-align:center">'+
+      '<div class="kicker" style="text-align:center">Votre score</div>'+
+      '<div class="score-final">'+(d.score||0)+'</div>'+
+      '<p class="muted" style="margin:8px 0 0">'+esc(d.pseudo)+' · '+(d.correctCount||0)+'/'+(d.totalQ||0)+' bonnes réponses · '+
+        '<b style="color:var(--gold)">'+(d.rank||'-')+'e</b>'+(d.totalPlayers?' / '+d.totalPlayers:'')+'</p>'+
+      '<div class="podlist">'+list+'</div>'+
+      '<p class="rankline" style="margin-top:18px">Merci d\'avoir participé — gardez votre téléphone pour un éventuel autre tour.</p>'+
+    '</div>';
+  show('end');
+});
+
+// ----- Reset -----
+socket.on('game:reset',()=>{ show('wait'); setWait('Nouvelle partie','En attente du démarrage par l\'animateur…'); });
+
+function setWait(title,msg){ $('waitTitle').textContent=title; $('waitMsg').textContent=msg; }
+</script>
+</body>
+</html>

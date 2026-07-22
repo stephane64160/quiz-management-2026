@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animateur — Quiz Management 2026</title>
+<style>
+  :root{
+    --paper:#0c0f16; --card:#151a24; --card-2:#1c2230; --ink:#e8ebf1; --muted:#9aa2af;
+    --line:#262d3a; --line-strong:#333c4c; --gold:#e2ad52; --gold-soft:#2a2313;
+    --green:#37bd85; --green-soft:#12271d; --red:#e86a63; --red-soft:#2c1717;
+    --serif:Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased;min-height:100vh;padding:clamp(16px,3vw,40px);}
+  .wrap{max-width:1080px;margin:0 auto;}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:26px;flex-wrap:wrap;}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3vw,30px);margin:4px 0 0;letter-spacing:-.01em;}
+  .pill{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line-strong);
+    padding:8px 14px;border-radius:99px;white-space:nowrap;}
+  .pill b{color:var(--gold);}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(20px,3vw,34px);
+    box-shadow:0 18px 40px -22px rgba(0,0,0,.7);}
+  .btn{font-family:var(--sans);font-size:16px;font-weight:600;padding:14px 28px;border-radius:12px;cursor:pointer;
+    border:1px solid transparent;transition:transform .1s,box-shadow .15s,opacity .15s;}
+  .btn-primary{background:var(--gold);color:#1a1406;}
+  .btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px -10px var(--gold);}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line-strong);}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+
+  /* -------- Lobby -------- */
+  .lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(20px,3vw,40px);align-items:center;}
+  @media(max-width:720px){.lobby{grid-template-columns:1fr;text-align:center;}}
+  .qrbox{background:#fff;padding:16px;border-radius:16px;display:grid;place-items:center;width:min(280px,70vw);margin:0 auto;}
+  .qrbox img{width:100%;display:block;border-radius:6px;}
+  .joinurl{font-family:var(--mono);font-size:14px;color:var(--gold);word-break:break-all;margin-top:14px;text-align:center;}
+  .lobby-r h2{font-family:var(--serif);font-size:clamp(20px,2.4vw,26px);margin:0 0 6px;}
+  .lobby-r p{color:var(--muted);margin:0 0 18px;max-width:46ch;}
+  .steps{font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.9;margin:0 0 20px;list-style:none;padding:0;}
+  .steps b{color:var(--ink);}
+  .roster{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;min-height:38px;}
+  .tag{font-size:14px;padding:7px 13px;border-radius:99px;background:var(--card-2);border:1px solid var(--line-strong);
+    animation:pop .25s ease both;}
+  .tag.done{border-color:var(--green);color:var(--green);}
+  @keyframes pop{from{opacity:0;transform:scale(.85);}to{opacity:1;transform:none;}}
+  .empty{color:var(--muted);font-family:var(--mono);font-size:13px;}
+
+  /* -------- Live question -------- */
+  .qhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .chip{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border-radius:99px;
+    border:1px solid var(--line-strong);color:var(--muted);font-weight:600;}
+  .chip.theme{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 40%,var(--line-strong));background:var(--gold-soft);}
+  .chip.multi{border-style:dashed;color:var(--ink);}
+  .question{font-family:var(--serif);font-size:clamp(22px,3.2vw,32px);line-height:1.25;margin:0 0 22px;text-wrap:balance;}
+  .bars{display:flex;flex-direction:column;gap:12px;}
+  .bar{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;}
+  .bar .lt{font-family:var(--mono);font-weight:700;color:var(--muted);font-size:15px;}
+  .bar .track{position:relative;background:var(--card-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;height:46px;}
+  .bar .fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 70%,transparent),var(--gold));
+    border-radius:9px;transition:width .5s cubic-bezier(.2,.7,.2,1);opacity:.85;}
+  .bar .txt{position:absolute;inset:0;display:flex;align-items:center;padding:0 14px;font-size:15px;gap:8px;z-index:1;}
+  .bar .cnt{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;min-width:52px;text-align:right;}
+  .bar.correct .fill{background:linear-gradient(90deg,color-mix(in srgb,var(--green) 55%,transparent),var(--green));opacity:.9;}
+  .bar.correct .track{border-color:var(--green);}
+  .bar.correct .lt{color:var(--green);}
+  .bar.dim{opacity:.55;}
+  .bar .badge{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:3px 7px;border-radius:6px;background:var(--green);color:#06210f;font-weight:700;}
+  .livecount{font-family:var(--mono);font-size:14px;color:var(--muted);margin:20px 0 0;font-variant-numeric:tabular-nums;}
+  .livecount b{color:var(--gold);}
+  .controls{display:flex;gap:14px;flex-wrap:wrap;margin-top:24px;align-items:center;}
+
+  .reveal{margin-top:22px;border-left:3px solid var(--gold);background:var(--card-2);border-radius:0 12px 12px 0;padding:18px 20px;
+    animation:rise .35s ease both;}
+  @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .reveal .fig{font-family:var(--mono);font-weight:700;font-size:clamp(24px,4vw,34px);color:var(--gold);}
+  .reveal .lab{color:var(--muted);font-size:14.5px;}
+  .reveal .exp{font-size:15px;margin:12px 0 10px;}
+  .reveal .src{font-family:var(--mono);font-size:12px;color:var(--muted);}
+
+  /* -------- End -------- */
+  .end{text-align:center;}
+  .podium{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin:24px 0 30px;flex-wrap:wrap;}
+  .col{width:150px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .col .name{font-weight:700;font-size:16px;text-align:center;word-break:break-word;}
+  .col .sc{font-family:var(--mono);color:var(--gold);font-variant-numeric:tabular-nums;font-size:14px;}
+  .col .block{width:100%;border-radius:12px 12px 0 0;background:var(--card-2);border:1px solid var(--line-strong);
+    display:grid;place-items:center;font-family:var(--serif);font-size:34px;color:var(--gold);}
+  .col.p1 .block{height:150px;background:linear-gradient(180deg,var(--gold-soft),var(--card-2));border-color:var(--gold);}
+  .col.p2 .block{height:112px;}
+  .col.p3 .block{height:86px;}
+  .lb{max-width:520px;margin:0 auto 26px;display:flex;flex-direction:column;gap:8px;text-align:left;}
+  .lb .row{display:grid;grid-template-columns:34px 1fr auto;gap:12px;padding:12px 16px;border-radius:11px;
+    background:var(--card-2);border:1px solid var(--line);align-items:center;}
+  .lb .rk{font-family:var(--mono);color:var(--muted);font-weight:700;}
+  .lb .row .sc{font-family:var(--mono);color:var(--gold);font-variant-numeric:tabular-nums;}
+  .hidden{display:none !important;}
+  .foot{text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:26px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="kicker">Tableau de bord animateur</div>
+      <h1>Le management en France · 2026</h1>
+    </div>
+    <div class="pill" id="statusPill">Salle d'attente</div>
+  </div>
+
+  <!-- LOBBY -->
+  <section id="lobby" class="card lobby">
+    <div>
+      <div class="qrbox" id="qrbox"><span class="empty">QR…</span></div>
+      <div class="joinurl" id="joinUrl">…</div>
+    </div>
+    <div class="lobby-r">
+      <h2>Scannez pour rejoindre</h2>
+      <p>Les participants scannent le QR code avec l'appareil photo de leur téléphone, choisissent un pseudo, et attendent le démarrage.</p>
+      <ul class="steps">
+        <li>1 · <b>Scannez</b> le QR code</li>
+        <li>2 · <b>Choisissez</b> un pseudo</li>
+        <li>3 · <b>Répondez</b> depuis votre mobile</li>
+      </ul>
+      <div class="roster" id="roster"><span class="empty">En attente de participants…</span></div>
+      <button class="btn btn-primary" id="startBtn" disabled>Démarrer le quiz</button>
+    </div>
+  </section>
+
+  <!-- LIVE -->
+  <section id="live" class="card hidden">
+    <div class="qhead" id="qhead"></div>
+    <p class="question" id="questionText"></p>
+    <div class="bars" id="bars"></div>
+    <p class="livecount" id="liveCount"></p>
+    <div id="revealSlot"></div>
+    <div class="controls" id="controls"></div>
+  </section>
+
+  <!-- END -->
+  <section id="end" class="card end hidden">
+    <div class="kicker" style="text-align:center">Classement final</div>
+    <div class="podium" id="podium"></div>
+    <div class="lb" id="fullBoard"></div>
+    <button class="btn btn-ghost" id="resetBtn">↺ Nouvelle partie</button>
+  </section>
+
+  <p class="foot">Sources : Gallup · Lab des Futurs × Ipsos · Capstan/SFR Business · Syntec Numérique — millésime 2025-2026</p>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const LETTERS=['A','B','C','D','E','F'];
+const $=id=>document.getElementById(id);
+const socket=io();
+let STATE=null, renderedQ=-1;
+
+socket.on('connect',()=>socket.emit('host:hello'));
+socket.on('host:state',s=>{STATE=s;render();});
+socket.on('host:aggregate',a=>{ if(STATE&&STATE.phase==='question'&&a.qIndex===STATE.currentQ){STATE.aggregate=a;updateBars(a,null);updateLiveCount(a);} });
+
+// QR + URL d'inscription
+fetch('/api/join-info').then(r=>r.json()).then(d=>{
+  $('joinUrl').textContent=d.joinUrl;
+  const box=$('qrbox'); box.innerHTML='';
+  const img=new Image(); img.src=d.qr; img.alt='QR code d\'inscription'; box.appendChild(img);
+}).catch(()=>{ $('qrbox').innerHTML='<span class="empty">QR indisponible</span>'; });
+
+function show(sec){ ['lobby','live','end'].forEach(s=>$(s).classList.toggle('hidden',s!==sec)); }
+
+function render(){
+  if(!STATE) return;
+  if(STATE.phase==='lobby'){ renderLobby(); show('lobby'); $('statusPill').innerHTML='Salle d\'attente'; }
+  else if(STATE.phase==='question'||STATE.phase==='reveal'){ renderLive(); show('live');
+    $('statusPill').innerHTML='Question <b>'+(STATE.currentQ+1)+'</b> / '+STATE.total; }
+  else if(STATE.phase==='ended'){ renderEnd(); show('end'); $('statusPill').innerHTML='Terminé'; }
+}
+
+function renderLobby(){
+  const r=$('roster'); r.innerHTML='';
+  if(!STATE.roster.length){ r.innerHTML='<span class="empty">En attente de participants…</span>'; }
+  else STATE.roster.forEach(p=>{ const t=document.createElement('span'); t.className='tag'; t.textContent=p.pseudo; r.appendChild(t); });
+  $('startBtn').disabled = STATE.roster.length===0;
+  $('startBtn').textContent = STATE.roster.length ? ('Démarrer le quiz · '+STATE.roster.length+' joueur'+(STATE.roster.length>1?'s':'')) : 'Démarrer le quiz';
+}
+
+function renderLive(){
+  const q=STATE.question; if(!q) return;
+  const isReveal=STATE.phase==='reveal';
+  const rebuild = renderedQ!==STATE.currentQ;
+  if(rebuild){
+    renderedQ=STATE.currentQ;
+    $('qhead').innerHTML='<span class="chip theme">'+esc(q.theme)+'</span>'+
+      '<span class="chip '+(q.multi?'multi':'')+'">'+(q.multi?'Plusieurs réponses possibles':'Réponse unique')+'</span>'+
+      '<span class="chip">Q'+(q.index+1)+'/'+q.total+'</span>';
+    $('questionText').textContent=q.q;
+    const bars=$('bars'); bars.innerHTML='';
+    q.options.forEach((opt,i)=>{
+      const row=document.createElement('div'); row.className='bar'; row.dataset.i=i;
+      row.innerHTML='<span class="lt">'+LETTERS[i]+'</span>'+
+        '<div class="track"><div class="fill"></div><div class="txt"><span class="badge hidden">Bonne réponse</span><span class="ot"></span></div></div>'+
+        '<span class="cnt"></span>';
+      row.querySelector('.ot').textContent=opt;
+      bars.appendChild(row);
+    });
+  }
+  const correct = isReveal && STATE.reveal ? STATE.reveal.correct : null;
+  updateBars(STATE.aggregate, correct);
+  updateLiveCount(STATE.aggregate);
+
+  // reveal panel
+  const slot=$('revealSlot');
+  if(isReveal && STATE.reveal){
+    const rv=STATE.reveal;
+    slot.innerHTML='<div class="reveal"><div><span class="fig">'+esc(rv.fig)+'</span> '+
+      '<span class="lab">'+esc(rv.figLabel)+'</span></div>'+
+      '<p class="exp">'+esc(rv.explain)+'</p>'+
+      '<div class="src">Source : '+esc(rv.source)+'</div></div>';
+  } else slot.innerHTML='';
+
+  // controls
+  const c=$('controls'); c.innerHTML='';
+  if(!isReveal){
+    const b=document.createElement('button'); b.className='btn btn-primary'; b.textContent='Révéler la bonne réponse';
+    b.onclick=()=>socket.emit('host:reveal'); c.appendChild(b);
+  } else {
+    const last=STATE.currentQ===STATE.total-1;
+    const b=document.createElement('button'); b.className='btn btn-primary';
+    b.textContent=last?'Voir le classement →':'Question suivante →';
+    b.onclick=()=>socket.emit('host:next'); c.appendChild(b);
+  }
+}
+
+function updateBars(agg,correct){
+  if(!agg) return;
+  const max=Math.max(1,...agg.counts);
+  document.querySelectorAll('#bars .bar').forEach(row=>{
+    const i=+row.dataset.i; const n=agg.counts[i]||0;
+    const pct=agg.answered? Math.round(n/agg.answered*100):0;
+    row.querySelector('.fill').style.width=(n/max*100)+'%';
+    row.querySelector('.cnt').textContent=n+' · '+pct+'%';
+    const isC=correct&&correct.includes(i);
+    row.classList.toggle('correct',!!isC);
+    row.classList.toggle('dim', !!correct && !isC);
+    row.querySelector('.badge').classList.toggle('hidden',!isC);
+  });
+}
+function updateLiveCount(agg){
+  if(!agg){$('liveCount').textContent='';return;}
+  $('liveCount').innerHTML='<b>'+agg.answered+'</b> / '+agg.total+' ont répondu'+
+    (STATE.phase==='reveal'?(' · <b>'+agg.correct+'</b> bonne'+(agg.correct>1?'s':'')+' réponse'+(agg.correct>1?'s':'')):'');
+}
+
+function renderEnd(){
+  const lb=STATE.leaderboard||[];
+  const order=[1,0,2]; // 2e, 1er, 3e pour le podium
+  const pod=$('podium'); pod.innerHTML='';
+  order.forEach(pos=>{
+    if(!lb[pos]) return;
+    const col=document.createElement('div'); col.className='col p'+(pos+1);
+    col.innerHTML='<div class="name"></div><div class="sc"></div><div class="block">'+(pos+1)+'</div>';
+    col.querySelector('.name').textContent=lb[pos].pseudo;
+    col.querySelector('.sc').textContent=lb[pos].score+' pts';
+    pod.appendChild(col);
+  });
+  const fb=$('fullBoard'); fb.innerHTML='';
+  lb.forEach((e,i)=>{
+    const row=document.createElement('div'); row.className='row';
+    row.innerHTML='<span class="rk">'+(i+1)+'</span><span class="nm"></span><span class="sc">'+e.score+' pts</span>';
+    row.querySelector('.nm').textContent=e.pseudo+'  ·  '+e.correctCount+'/'+STATE.total+' bonnes';
+    fb.appendChild(row);
+  });
+}
+
+$('startBtn').onclick=()=>socket.emit('host:start');
+$('resetBtn').onclick=()=>socket.emit('host:reset');
+
+function esc(s){const d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;}
+</script>
+</body>
+</html>

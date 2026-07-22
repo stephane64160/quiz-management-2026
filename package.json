@@ -1,0 +1,17 @@
+{
+  "name": "quiz-management-2026",
+  "version": "1.0.0",
+  "description": "Quiz temps reel multi-joueurs (type Kahoot) sur le management en France en 2026 - QR code, pseudo, analyse live par question.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "qrcode": "^1.5.3",
+    "socket.io": "^4.7.5"
+  }
+}

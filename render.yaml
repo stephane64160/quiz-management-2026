@@ -1,0 +1,15 @@
+# Blueprint Render — deploiement automatique du quiz temps reel.
+# Sur render.com : New + > Blueprint > selectionnez ce depot.
+# Render lit ce fichier et configure le service tout seul.
+services:
+  - type: web
+    name: quiz-management-2026
+    runtime: node
+    plan: free
+    region: frankfurt          # proche de la France (latence faible)
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+    autoDeploy: true           # redeploie a chaque push sur la branche
