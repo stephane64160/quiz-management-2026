@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Animateur — Quiz Management 2026</title>
+<title>Animateur — Console de formation 2026</title>
 <style>
   :root{
     --paper:#0c0f16; --card:#151a24; --card-2:#1c2230; --ink:#e8ebf1; --muted:#9aa2af;
@@ -18,40 +18,60 @@
   body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;
     -webkit-font-smoothing:antialiased;min-height:100vh;padding:clamp(16px,3vw,40px);}
   .wrap{max-width:1080px;margin:0 auto;}
-  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:26px;flex-wrap:wrap;}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:24px;flex-wrap:wrap;}
   .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;}
   h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3vw,30px);margin:4px 0 0;letter-spacing:-.01em;}
+  .top-right{display:flex;align-items:center;gap:12px;}
   .pill{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line-strong);
     padding:8px 14px;border-radius:99px;white-space:nowrap;}
   .pill b{color:var(--gold);}
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(20px,3vw,34px);
     box-shadow:0 18px 40px -22px rgba(0,0,0,.7);}
-  .btn{font-family:var(--sans);font-size:16px;font-weight:600;padding:14px 28px;border-radius:12px;cursor:pointer;
+  .btn{font-family:var(--sans);font-size:16px;font-weight:600;padding:13px 26px;border-radius:12px;cursor:pointer;
     border:1px solid transparent;transition:transform .1s,box-shadow .15s,opacity .15s;}
   .btn-primary{background:var(--gold);color:#1a1406;}
   .btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px -10px var(--gold);}
   .btn-primary:disabled{opacity:.35;cursor:not-allowed;}
   .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line-strong);}
   .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-sm{font-size:13px;padding:9px 16px;}
+  .hidden{display:none !important;}
 
-  /* -------- Lobby -------- */
-  .lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(20px,3vw,40px);align-items:center;}
-  @media(max-width:720px){.lobby{grid-template-columns:1fr;text-align:center;}}
-  .qrbox{background:#fff;padding:16px;border-radius:16px;display:grid;place-items:center;width:min(280px,70vw);margin:0 auto;}
+  /* -------- Sommaire -------- */
+  .somm{display:grid;grid-template-columns:300px 1fr;gap:clamp(20px,3vw,36px);align-items:start;}
+  @media(max-width:760px){.somm{grid-template-columns:1fr;}}
+  .join-panel{text-align:center;}
+  .qrbox{background:#fff;padding:14px;border-radius:16px;display:grid;place-items:center;width:min(280px,80vw);margin:0 auto;}
   .qrbox img{width:100%;display:block;border-radius:6px;}
-  .joinurl{font-family:var(--mono);font-size:14px;color:var(--gold);word-break:break-all;margin-top:14px;text-align:center;}
-  .lobby-r h2{font-family:var(--serif);font-size:clamp(20px,2.4vw,26px);margin:0 0 6px;}
-  .lobby-r p{color:var(--muted);margin:0 0 18px;max-width:46ch;}
-  .steps{font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.9;margin:0 0 20px;list-style:none;padding:0;}
-  .steps b{color:var(--ink);}
-  .roster{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;min-height:38px;}
-  .lobby-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
-  .end-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-  .tag{font-size:14px;padding:7px 13px;border-radius:99px;background:var(--card-2);border:1px solid var(--line-strong);
-    animation:pop .25s ease both;}
-  .tag.done{border-color:var(--green);color:var(--green);}
+  .joinurl{font-family:var(--mono);font-size:13px;color:var(--gold);word-break:break-all;margin-top:12px;}
+  .join-panel h2{font-family:var(--serif);font-size:19px;margin:16px 0 4px;}
+  .join-panel p{color:var(--muted);font-size:13.5px;margin:0;}
+  .roster{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;justify-content:center;min-height:34px;}
+  .tag{font-size:14px;padding:6px 12px;border-radius:99px;background:var(--card-2);border:1px solid var(--line-strong);animation:pop .25s ease both;}
   @keyframes pop{from{opacity:0;transform:scale(.85);}to{opacity:1;transform:none;}}
   .empty{color:var(--muted);font-family:var(--mono);font-size:13px;}
+
+  .menu-h{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;}
+  .cards{display:flex;flex-direction:column;gap:14px;}
+  .acard{display:flex;align-items:center;gap:18px;padding:20px;border-radius:16px;border:1px solid var(--line-strong);
+    background:var(--card-2);cursor:pointer;text-align:left;width:100%;color:var(--ink);
+    transition:border-color .15s,transform .1s,background .15s;}
+  .acard:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .acard .ic{flex:none;width:56px;height:56px;border-radius:14px;background:var(--paper);display:grid;place-items:center;font-size:28px;
+    border:1px solid var(--line);}
+  .acard .tt{font-family:var(--serif);font-size:19px;margin:0 0 3px;}
+  .acard .ss{color:var(--muted);font-size:13.5px;}
+  .acard .go{margin-left:auto;color:var(--gold);font-size:22px;flex:none;}
+  .acard.locked{opacity:.55;cursor:not-allowed;}
+  .acard.locked:hover{border-color:var(--line-strong);transform:none;}
+  .lock-note{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:10px;}
+
+  /* -------- Quiz lobby -------- */
+  .qlobby{text-align:center;padding:clamp(24px,5vw,50px) 20px;}
+  .qlobby .ic{font-size:42px;margin-bottom:8px;}
+  .qlobby h2{font-family:var(--serif);font-size:clamp(22px,3vw,28px);margin:0 0 6px;}
+  .qlobby p{color:var(--muted);margin:0 auto 26px;max-width:44ch;}
+  .qlobby .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
 
   /* -------- Live question -------- */
   .qhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
@@ -76,9 +96,7 @@
   .livecount{font-family:var(--mono);font-size:14px;color:var(--muted);margin:20px 0 0;font-variant-numeric:tabular-nums;}
   .livecount b{color:var(--gold);}
   .controls{display:flex;gap:14px;flex-wrap:wrap;margin-top:24px;align-items:center;}
-
-  .reveal{margin-top:22px;border-left:3px solid var(--gold);background:var(--card-2);border-radius:0 12px 12px 0;padding:18px 20px;
-    animation:rise .35s ease both;}
+  .reveal{margin-top:22px;border-left:3px solid var(--gold);background:var(--card-2);border-radius:0 12px 12px 0;padding:18px 20px;animation:rise .35s ease both;}
   @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
   .reveal .fig{font-family:var(--mono);font-weight:700;font-size:clamp(24px,4vw,34px);color:var(--gold);}
   .reveal .lab{color:var(--muted);font-size:14.5px;}
@@ -94,14 +112,27 @@
   .col .block{width:100%;border-radius:12px 12px 0 0;background:var(--card-2);border:1px solid var(--line-strong);
     display:grid;place-items:center;font-family:var(--serif);font-size:34px;color:var(--gold);}
   .col.p1 .block{height:150px;background:linear-gradient(180deg,var(--gold-soft),var(--card-2));border-color:var(--gold);}
-  .col.p2 .block{height:112px;}
-  .col.p3 .block{height:86px;}
+  .col.p2 .block{height:112px;} .col.p3 .block{height:86px;}
   .lb{max-width:520px;margin:0 auto 26px;display:flex;flex-direction:column;gap:8px;text-align:left;}
   .lb .row{display:grid;grid-template-columns:34px 1fr auto;gap:12px;padding:12px 16px;border-radius:11px;
     background:var(--card-2);border:1px solid var(--line);align-items:center;}
   .lb .rk{font-family:var(--mono);color:var(--muted);font-weight:700;}
   .lb .row .sc{font-family:var(--mono);color:var(--gold);font-variant-numeric:tabular-nums;}
-  .hidden{display:none !important;}
+  .end-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+  /* -------- Word wall -------- */
+  .wallhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:8px;}
+  .wall-prompt{font-family:var(--serif);font-size:clamp(22px,3.4vw,30px);margin:0;text-wrap:balance;}
+  .wall-sub{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin:6px 0 0;}
+  .wall-sub b{color:var(--gold);}
+  .cloud{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:center;min-height:280px;
+    padding:24px;margin-top:12px;border:1px dashed var(--line-strong);border-radius:16px;background:var(--paper);}
+  .cloud .w{font-family:var(--serif);line-height:1.05;color:var(--ink);animation:wpop .4s cubic-bezier(.2,.8,.2,1) both;white-space:nowrap;}
+  .cloud .w .n{font-family:var(--mono);font-size:.5em;color:var(--muted);vertical-align:super;margin-left:2px;}
+  @keyframes wpop{from{opacity:0;transform:scale(.6);}to{opacity:1;transform:scale(1);}}
+  .cloud .empty{align-self:center;}
+  .wall-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+
   .foot{text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:26px;}
 </style>
 </head>
@@ -109,31 +140,39 @@
 <div class="wrap">
   <div class="top">
     <div>
-      <div class="kicker">Tableau de bord animateur</div>
-      <h1>Le management en France · 2026</h1>
+      <div class="kicker">Console de formation · 2026</div>
+      <h1 id="title">Sommaire</h1>
     </div>
-    <div class="pill" id="statusPill">Salle d'attente</div>
+    <div class="top-right">
+      <button class="btn btn-ghost btn-sm hidden" id="backBtn">← Sommaire</button>
+      <div class="pill" id="statusPill">Sommaire</div>
+    </div>
   </div>
 
-  <!-- LOBBY -->
-  <section id="lobby" class="card lobby">
-    <div>
+  <!-- SOMMAIRE -->
+  <section id="sommaire" class="card somm">
+    <div class="join-panel">
       <div class="qrbox" id="qrbox"><span class="empty">QR…</span></div>
       <div class="joinurl" id="joinUrl">…</div>
-    </div>
-    <div class="lobby-r">
       <h2>Scannez pour rejoindre</h2>
-      <p>Les participants scannent le QR code avec l'appareil photo de leur téléphone, choisissent un pseudo, et attendent le démarrage.</p>
-      <ul class="steps">
-        <li>1 · <b>Scannez</b> le QR code</li>
-        <li>2 · <b>Choisissez</b> un pseudo</li>
-        <li>3 · <b>Répondez</b> depuis votre mobile</li>
-      </ul>
+      <p>QR code → pseudo → l'activité s'affiche sur le mobile.</p>
       <div class="roster" id="roster"><span class="empty">En attente de participants…</span></div>
-      <div class="lobby-actions">
-        <button class="btn btn-primary" id="startBtn" disabled>Démarrer le quiz</button>
-        <button class="btn btn-ghost" id="clearBtnLobby" style="display:none">Vider la salle</button>
-      </div>
+    </div>
+    <div>
+      <p class="menu-h">Choisissez une activité</p>
+      <div class="cards" id="cards"></div>
+      <p class="lock-note" id="lockNote"></p>
+      <div style="margin-top:22px"><button class="btn btn-ghost btn-sm hidden" id="clearBtnLobby">Vider la salle</button></div>
+    </div>
+  </section>
+
+  <!-- QUIZ LOBBY -->
+  <section id="quizlobby" class="card qlobby hidden">
+    <div class="ic" id="qlIcon">🤖</div>
+    <h2 id="qlTitle">Quiz</h2>
+    <p id="qlSub">Les participants sont prêts. Lancez quand vous voulez.</p>
+    <div class="row">
+      <button class="btn btn-primary" id="startBtn" disabled>Démarrer le quiz</button>
     </div>
   </section>
 
@@ -154,56 +193,97 @@
     <div class="lb" id="fullBoard"></div>
     <div class="end-actions">
       <button class="btn btn-primary" id="resetBtn">↺ Rejouer · mêmes joueurs</button>
-      <button class="btn btn-ghost" id="clearBtn">Vider la salle · nouveau groupe</button>
+      <button class="btn btn-ghost" id="toMenuBtn">← Retour au sommaire</button>
     </div>
   </section>
 
-  <p class="foot">Sources : Gallup · Lab des Futurs × Ipsos · Capstan/SFR Business · Syntec Numérique — millésime 2025-2026</p>
+  <!-- WORD WALL -->
+  <section id="wall" class="card hidden">
+    <div class="wallhead">
+      <div>
+        <p class="wall-prompt" id="wallPrompt">Mur de mots</p>
+        <p class="wall-sub" id="wallSub"></p>
+      </div>
+    </div>
+    <div class="cloud" id="cloud"><span class="empty">En attente des premiers mots…</span></div>
+    <div class="wall-actions">
+      <button class="btn btn-ghost" id="wallClearBtn">Effacer le mur</button>
+    </div>
+  </section>
+
+  <p class="foot" id="foot">Sources vérifiables dans le fichier quiz-data.js — millésime 2025-2026.</p>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const LETTERS=['A','B','C','D','E','F'];
 const $=id=>document.getElementById(id);
+const esc=s=>{const d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;};
 const socket=io();
 let STATE=null, renderedQ=-1;
 
 socket.on('connect',()=>socket.emit('host:hello'));
 socket.on('host:state',s=>{STATE=s;render();});
-socket.on('host:aggregate',a=>{ if(STATE&&STATE.phase==='question'&&a.qIndex===STATE.currentQ){STATE.aggregate=a;updateBars(a,null);updateLiveCount(a);} });
+socket.on('host:aggregate',a=>{ if(STATE&&STATE.mode==='quiz'&&STATE.quiz.phase==='question'&&a.qIndex===STATE.quiz.currentQ){STATE.aggregate=a;updateBars(a,null);updateLiveCount(a);} });
+socket.on('host:wall',w=>{ if(STATE&&STATE.mode==='wordwall'){STATE.wall.items=w.items;STATE.wall.totalWords=w.totalWords;renderCloud();} });
 
-// QR + URL d'inscription
+// QR (une fois)
 fetch('/api/join-info').then(r=>r.json()).then(d=>{
   $('joinUrl').textContent=d.joinUrl;
-  const box=$('qrbox'); box.innerHTML='';
-  const img=new Image(); img.src=d.qr; img.alt='QR code d\'inscription'; box.appendChild(img);
+  const box=$('qrbox'); box.innerHTML=''; const img=new Image(); img.src=d.qr; img.alt='QR code d\'inscription'; box.appendChild(img);
 }).catch(()=>{ $('qrbox').innerHTML='<span class="empty">QR indisponible</span>'; });
 
-function show(sec){ ['lobby','live','end'].forEach(s=>$(s).classList.toggle('hidden',s!==sec)); }
+function show(sec){ ['sommaire','quizlobby','live','end','wall'].forEach(s=>$(s).classList.toggle('hidden',s!==sec)); }
 
 function render(){
   if(!STATE) return;
-  if(STATE.phase==='lobby'){ renderLobby(); show('lobby'); $('statusPill').innerHTML='Salle d\'attente'; }
-  else if(STATE.phase==='question'||STATE.phase==='reveal'){ renderLive(); show('live');
-    $('statusPill').innerHTML='Question <b>'+(STATE.currentQ+1)+'</b> / '+STATE.total; }
-  else if(STATE.phase==='ended'){ renderEnd(); show('end'); $('statusPill').innerHTML='Terminé'; }
+  const inActivity = STATE.mode!=='menu';
+  $('backBtn').classList.toggle('hidden', !inActivity);
+  if(STATE.mode==='menu'){ renderSommaire(); show('sommaire'); $('title').textContent='Sommaire'; $('statusPill').innerHTML='Sommaire · <b>'+STATE.total+'</b> connecté'+(STATE.total>1?'s':''); }
+  else if(STATE.mode==='wordwall'){ renderWall(); show('wall'); $('title').textContent='Mur de mots'; $('statusPill').innerHTML='Mur de mots · <b>'+STATE.total+'</b> connecté'+(STATE.total>1?'s':''); }
+  else if(STATE.mode==='quiz'){
+    $('title').textContent=STATE.quiz.title;
+    const ph=STATE.quiz.phase;
+    if(ph==='lobby'){ renderQuizLobby(); show('quizlobby'); $('statusPill').innerHTML='Prêt · <b>'+STATE.total+'</b> joueur'+(STATE.total>1?'s':''); }
+    else if(ph==='question'||ph==='reveal'){ renderLive(); show('live'); $('statusPill').innerHTML='Question <b>'+(STATE.quiz.currentQ+1)+'</b> / '+STATE.quiz.totalQ; }
+    else if(ph==='ended'){ renderEnd(); show('end'); $('statusPill').innerHTML='Terminé'; }
+  }
 }
 
-function renderLobby(){
+/* ---- Sommaire ---- */
+function renderSommaire(){
   const r=$('roster'); r.innerHTML='';
-  if(!STATE.roster.length){ r.innerHTML='<span class="empty">En attente de participants…</span>'; }
-  else STATE.roster.forEach(p=>{ const t=document.createElement('span'); t.className='tag'; t.textContent=p.pseudo; r.appendChild(t); });
-  $('startBtn').disabled = STATE.roster.length===0;
-  $('startBtn').textContent = STATE.roster.length ? ('Démarrer le quiz · '+STATE.roster.length+' joueur'+(STATE.roster.length>1?'s':'')) : 'Démarrer le quiz';
-  $('clearBtnLobby').style.display = STATE.roster.length ? 'inline-block' : 'none';
+  if(!STATE.roster.length) r.innerHTML='<span class="empty">En attente de participants…</span>';
+  else STATE.roster.forEach(p=>{const t=document.createElement('span');t.className='tag';t.textContent=p.pseudo;r.appendChild(t);});
+  $('clearBtnLobby').classList.toggle('hidden', STATE.roster.length===0);
+
+  const c=$('cards'); c.innerHTML='';
+  STATE.menu.forEach(m=>{
+    const b=document.createElement('button'); b.className='acard';
+    const sub = m.kind==='quiz' ? (m.subtitle||(m.count+' questions')) : (m.subtitle||'');
+    b.innerHTML='<span class="ic">'+esc(m.icon)+'</span><span><div class="tt">'+esc(m.title)+'</div><div class="ss">'+esc(sub)+'</div></span><span class="go">→</span>';
+    b.onclick=()=>{ if(m.kind==='quiz') socket.emit('host:pickQuiz',{quizId:m.id}); else socket.emit('host:pickWall'); };
+    c.appendChild(b);
+  });
+  $('lockNote').textContent = STATE.total===0 ? 'Astuce : un quiz ne pourra démarrer qu\'avec au moins un participant connecté.' : '';
 }
 
+/* ---- Quiz lobby ---- */
+function renderQuizLobby(){
+  const m = STATE.menu.find(x=>x.id===STATE.quiz.id);
+  $('qlIcon').textContent = m?m.icon:'🤖';
+  $('qlTitle').textContent = STATE.quiz.title;
+  $('qlSub').textContent = STATE.total ? (STATE.total+' participant'+(STATE.total>1?'s':'')+' connecté'+(STATE.total>1?'s':'')+'. Lancez quand vous voulez.') : 'En attente de participants… (le QR reste actif dans le sommaire)';
+  $('startBtn').disabled = STATE.total===0;
+  $('startBtn').textContent = STATE.total ? ('Démarrer · '+STATE.total+' joueur'+(STATE.total>1?'s':'')) : 'En attente de joueurs…';
+}
+
+/* ---- Live ---- */
 function renderLive(){
   const q=STATE.question; if(!q) return;
-  const isReveal=STATE.phase==='reveal';
-  const rebuild = renderedQ!==STATE.currentQ;
-  if(rebuild){
-    renderedQ=STATE.currentQ;
+  const isReveal=STATE.quiz.phase==='reveal';
+  if(renderedQ!==STATE.quiz.currentQ){
+    renderedQ=STATE.quiz.currentQ;
     $('qhead').innerHTML='<span class="chip theme">'+esc(q.theme)+'</span>'+
       '<span class="chip '+(q.multi?'multi':'')+'">'+(q.multi?'Plusieurs réponses possibles':'Réponse unique')+'</span>'+
       '<span class="chip">Q'+(q.index+1)+'/'+q.total+'</span>';
@@ -211,88 +291,89 @@ function renderLive(){
     const bars=$('bars'); bars.innerHTML='';
     q.options.forEach((opt,i)=>{
       const row=document.createElement('div'); row.className='bar'; row.dataset.i=i;
-      row.innerHTML='<span class="lt">'+LETTERS[i]+'</span>'+
-        '<div class="track"><div class="fill"></div><div class="txt"><span class="badge hidden">Bonne réponse</span><span class="ot"></span></div></div>'+
-        '<span class="cnt"></span>';
-      row.querySelector('.ot').textContent=opt;
-      bars.appendChild(row);
+      row.innerHTML='<span class="lt">'+LETTERS[i]+'</span><div class="track"><div class="fill"></div>'+
+        '<div class="txt"><span class="badge hidden">Bonne réponse</span><span class="ot"></span></div></div><span class="cnt"></span>';
+      row.querySelector('.ot').textContent=opt; bars.appendChild(row);
     });
   }
-  const correct = isReveal && STATE.reveal ? STATE.reveal.correct : null;
-  updateBars(STATE.aggregate, correct);
+  updateBars(STATE.aggregate, isReveal&&STATE.reveal?STATE.reveal.correct:null);
   updateLiveCount(STATE.aggregate);
 
-  // reveal panel
   const slot=$('revealSlot');
-  if(isReveal && STATE.reveal){
-    const rv=STATE.reveal;
-    slot.innerHTML='<div class="reveal"><div><span class="fig">'+esc(rv.fig)+'</span> '+
-      '<span class="lab">'+esc(rv.figLabel)+'</span></div>'+
-      '<p class="exp">'+esc(rv.explain)+'</p>'+
-      '<div class="src">Source : '+esc(rv.source)+'</div></div>';
+  if(isReveal&&STATE.reveal){ const rv=STATE.reveal;
+    slot.innerHTML='<div class="reveal"><div><span class="fig">'+esc(rv.fig)+'</span> <span class="lab">'+esc(rv.figLabel)+'</span></div>'+
+      '<p class="exp">'+esc(rv.explain)+'</p><div class="src">Source : '+esc(rv.source)+'</div></div>';
   } else slot.innerHTML='';
 
-  // controls
   const c=$('controls'); c.innerHTML='';
-  if(!isReveal){
-    const b=document.createElement('button'); b.className='btn btn-primary'; b.textContent='Révéler la bonne réponse';
-    b.onclick=()=>socket.emit('host:reveal'); c.appendChild(b);
-  } else {
-    const last=STATE.currentQ===STATE.total-1;
-    const b=document.createElement('button'); b.className='btn btn-primary';
-    b.textContent=last?'Voir le classement →':'Question suivante →';
-    b.onclick=()=>socket.emit('host:next'); c.appendChild(b);
-  }
+  if(!isReveal){ const b=document.createElement('button'); b.className='btn btn-primary'; b.textContent='Révéler la bonne réponse'; b.onclick=()=>socket.emit('host:reveal'); c.appendChild(b); }
+  else { const last=STATE.quiz.currentQ===STATE.quiz.totalQ-1; const b=document.createElement('button'); b.className='btn btn-primary'; b.textContent=last?'Voir le classement →':'Question suivante →'; b.onclick=()=>socket.emit('host:next'); c.appendChild(b); }
 }
-
 function updateBars(agg,correct){
   if(!agg) return;
   const max=Math.max(1,...agg.counts);
   document.querySelectorAll('#bars .bar').forEach(row=>{
-    const i=+row.dataset.i; const n=agg.counts[i]||0;
-    const pct=agg.answered? Math.round(n/agg.answered*100):0;
+    const i=+row.dataset.i; const n=agg.counts[i]||0; const pct=agg.answered?Math.round(n/agg.answered*100):0;
     row.querySelector('.fill').style.width=(n/max*100)+'%';
     row.querySelector('.cnt').textContent=n+' · '+pct+'%';
     const isC=correct&&correct.includes(i);
-    row.classList.toggle('correct',!!isC);
-    row.classList.toggle('dim', !!correct && !isC);
+    row.classList.toggle('correct',!!isC); row.classList.toggle('dim',!!correct&&!isC);
     row.querySelector('.badge').classList.toggle('hidden',!isC);
   });
 }
 function updateLiveCount(agg){
   if(!agg){$('liveCount').textContent='';return;}
   $('liveCount').innerHTML='<b>'+agg.answered+'</b> / '+agg.total+' ont répondu'+
-    (STATE.phase==='reveal'?(' · <b>'+agg.correct+'</b> bonne'+(agg.correct>1?'s':'')+' réponse'+(agg.correct>1?'s':'')):'');
+    (STATE.quiz.phase==='reveal'?(' · <b>'+agg.correct+'</b> bonne'+(agg.correct>1?'s':'')+' réponse'+(agg.correct>1?'s':'')):'');
 }
 
+/* ---- End ---- */
 function renderEnd(){
-  const lb=STATE.leaderboard||[];
-  const order=[1,0,2]; // 2e, 1er, 3e pour le podium
+  const lb=STATE.leaderboard||[]; const order=[1,0,2];
   const pod=$('podium'); pod.innerHTML='';
-  order.forEach(pos=>{
-    if(!lb[pos]) return;
-    const col=document.createElement('div'); col.className='col p'+(pos+1);
+  order.forEach(pos=>{ if(!lb[pos])return; const col=document.createElement('div'); col.className='col p'+(pos+1);
     col.innerHTML='<div class="name"></div><div class="sc"></div><div class="block">'+(pos+1)+'</div>';
-    col.querySelector('.name').textContent=lb[pos].pseudo;
-    col.querySelector('.sc').textContent=lb[pos].score+' pts';
-    pod.appendChild(col);
-  });
+    col.querySelector('.name').textContent=lb[pos].pseudo; col.querySelector('.sc').textContent=lb[pos].score+' pts'; pod.appendChild(col); });
   const fb=$('fullBoard'); fb.innerHTML='';
-  lb.forEach((e,i)=>{
-    const row=document.createElement('div'); row.className='row';
+  lb.forEach((e,i)=>{ const row=document.createElement('div'); row.className='row';
     row.innerHTML='<span class="rk">'+(i+1)+'</span><span class="nm"></span><span class="sc">'+e.score+' pts</span>';
-    row.querySelector('.nm').textContent=e.pseudo+'  ·  '+e.correctCount+'/'+STATE.total+' bonnes';
-    fb.appendChild(row);
+    row.querySelector('.nm').textContent=e.pseudo+'  ·  '+e.correctCount+'/'+STATE.quiz.totalQ+' bonnes'; fb.appendChild(row); });
+}
+
+/* ---- Word wall ---- */
+function renderWall(){
+  $('wallPrompt').textContent=STATE.wall.prompt;
+  renderCloud();
+}
+function renderCloud(){
+  const items=STATE.wall.items||[];
+  $('wallSub').innerHTML='<b>'+(STATE.wall.totalWords||0)+'</b> mot'+((STATE.wall.totalWords||0)>1?'s':'')+' envoyé'+((STATE.wall.totalWords||0)>1?'s':'')+' · <b>'+items.length+'</b> unique'+(items.length>1?'s':'');
+  const cloud=$('cloud');
+  if(!items.length){ cloud.innerHTML='<span class="empty">En attente des premiers mots…</span>'; return; }
+  const max=Math.max(...items.map(i=>i.count));
+  const min=Math.min(...items.map(i=>i.count));
+  cloud.innerHTML='';
+  items.forEach(it=>{
+    const t=max===min?1:(it.count-min)/(max-min);
+    const size=Math.round(17+t*40);              // 17px → 57px
+    const light=55+Math.round(t*30);             // couleur : plus vif si fréquent
+    const el=document.createElement('span'); el.className='w';
+    el.style.fontSize=size+'px';
+    el.style.color = it.count>min ? 'color-mix(in srgb, var(--gold) '+light+'%, var(--ink))' : 'var(--muted)';
+    el.textContent=it.text;
+    if(it.count>1){ const n=document.createElement('span'); n.className='n'; n.textContent='×'+it.count; el.appendChild(n); }
+    cloud.appendChild(el);
   });
 }
 
+/* ---- Boutons ---- */
 $('startBtn').onclick=()=>socket.emit('host:start');
 $('resetBtn').onclick=()=>socket.emit('host:reset');
-function doClear(){ if(confirm('Vider la salle et retirer TOUS les participants ? (à faire pour un nouveau groupe)')) socket.emit('host:clear'); }
-$('clearBtn').onclick=doClear;
+$('backBtn').onclick=()=>socket.emit('host:menu');
+$('toMenuBtn').onclick=()=>socket.emit('host:menu');
+$('wallClearBtn').onclick=()=>{ if(confirm('Effacer tous les mots du mur ?')) socket.emit('host:wallClear'); };
+function doClear(){ if(confirm('Vider la salle et retirer TOUS les participants ? (pour un nouveau groupe)')) socket.emit('host:clear'); }
 $('clearBtnLobby').onclick=doClear;
-
-function esc(s){const d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;}
 </script>
 </body>
 </html>

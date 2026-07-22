@@ -1,18 +1,27 @@
-# Quiz Management France 2026 — temps réel (type Kahoot)
+# Console de formation 2026 — temps réel (type Kahoot)
 
-Quiz de 5 questions sur le management en France en 2026, à jouer en direct
-pendant une formation. Chaque participant rejoint depuis son **téléphone** en
-scannant un **QR code**, choisit un **pseudo**, et l'animateur voit l'**analyse
-des réponses par question en direct** sur son tableau de bord.
+Console interactive à animer en direct pendant une formation. Chaque participant
+rejoint depuis son **téléphone** en scannant un **QR code** et choisit un **pseudo**.
+Sur son écran, l'animateur dispose d'un **sommaire** et choisit l'activité à lancer :
+
+- 📊 **Quiz — Le management en France 2026** (5 questions)
+- 🤖 **Quiz — L'IA au travail en France 2026** (10 questions)
+- 💬 **Mur de mots** — chaque participant envoie un ou plusieurs mots qui
+  s'affichent en direct dans un nuage (taille selon la fréquence).
+
+Pour les quiz, l'animateur voit l'**analyse des réponses par question en direct**
+(barres qui se remplissent) puis un **classement final**.
 
 ## Contenu
 
 | Fichier | Rôle |
 |---|---|
-| `server.js` | Serveur temps réel (Express + Socket.IO). Détient l'état de la partie et valide les réponses. |
-| `public/host.html` | Tableau de bord **animateur** : QR code, joueurs connectés, barres live, classement. |
-| `public/play.html` | Page **participant** (mobile) : pseudo → questions → feedback. |
-| `quiz-data.js` | Les 5 questions, réponses et sources. **Modifiez ici pour changer le quiz.** |
+| `server.js` | Serveur temps réel (Express + Socket.IO). État de session, validation des réponses, agrégation du mur de mots. |
+| `public/host.html` | Écran **animateur** : sommaire, QR code, activités, barres live, classement, mur de mots. |
+| `public/play.html` | Page **participant** (mobile) : pseudo → l'écran s'adapte à l'activité lancée. |
+| `quiz-data.js` | Les **quiz** (questions, réponses, sources). **Modifiez ici pour changer / ajouter un quiz.** |
+
+Le texte d'invite du **mur de mots** se règle en haut de `server.js` (constante `WALL`).
 
 ## 1. Lancer en local (test)
 
@@ -70,15 +79,18 @@ n'importe quel réseau.
 
 ## Déroulé le jour J
 
-1. Projetez le **tableau de bord animateur** (`/host`).
+1. Projetez l'**écran animateur** (`/host`) — il s'ouvre sur le **sommaire**.
 2. Les participants scannent le **QR code** et saisissent leur **pseudo** → ils apparaissent en direct.
-3. Cliquez **Démarrer le quiz**.
-4. Pour chaque question : les réponses remplissent les **barres en direct** → cliquez **Révéler la bonne réponse** (affiche la statistique + la source) pour lancer la discussion → **Question suivante**.
-5. À la fin : **podium et classement**. Bouton **Nouvelle partie** pour rejouer.
+3. Cliquez sur une **activité** du sommaire :
+   - **Quiz** → écran « prêt » → **Démarrer** → pour chaque question, les **barres** se remplissent en direct → **Révéler la bonne réponse** (stat + source, pour lancer la discussion) → **Question suivante** → **podium & classement**.
+   - **Mur de mots** → les participants tapent un ou plusieurs mots → le **nuage** se remplit en direct (mots fréquents plus gros). Bouton **Effacer le mur**.
+4. Bouton **← Sommaire** à tout moment pour changer d'activité.
+5. Bouton **Vider la salle** (dans le sommaire) pour repartir avec un nouveau groupe.
 
 ## Notes
 
-- Les bonnes réponses restent **côté serveur** et ne sont envoyées aux téléphones qu'au moment de la révélation (pas de triche).
+- Les bonnes réponses des quiz restent **côté serveur** et ne sont envoyées aux téléphones qu'au moment de la révélation (pas de triche).
 - Score = bonnes réponses + **bonus de rapidité** (répondre vite rapporte plus).
-- Le quiz gère **une salle** à la fois (idéal pour un groupe en formation).
-- Les statistiques proviennent d'articles et baromètres RH 2025-2026 (voir sources dans `quiz-data.js`) ; vérifiez les chiffres que vous mettez le plus en avant avant de les présenter comme officiels.
+- La console gère **une salle** à la fois (idéal pour un groupe en formation).
+- **Ajouter un quiz** : dupliquez un bloc dans `quiz-data.js` (id, title, subtitle, icon, questions). Il apparaît automatiquement dans le sommaire.
+- Les statistiques proviennent d'articles et baromètres 2025-2026 (voir sources dans `quiz-data.js`) ; vérifiez les chiffres que vous mettez le plus en avant avant de les présenter comme officiels.
