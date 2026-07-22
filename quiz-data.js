@@ -3,8 +3,9 @@
 //  Chaque quiz : { id, title, subtitle, icon, questions:[...] }
 //  Question : correct = index des bonnes reponses (0=A,1=B,2=C,3=D).
 //  multi:true => plusieurs bonnes reponses possibles.
-//  anim = mini "dessin anime" joue apres la revelation (3 temps).
-//    beats: [{ico, t}, {ico, t, big:true}, {ico, t}]
+//  anim = "dessin anime" explicatif joue apres la revelation.
+//    beats: [{ ico, tag, t, big? }]
+//    tag = intertitre (LE CONSTAT, POURQUOI, A RETENIR...)
 //    big:true => affiche le chiffre geant + confettis sur ce temps.
 //  (Le "Mur de mots" est configure dans server.js, pas ici.)
 // =====================================================================
@@ -32,9 +33,11 @@ module.exports = [
         explain: "L'engagement des managers passe de 31 % à 22 %. C'est l'effet « sandwich » : pris entre la pression du haut et le désengagement des équipes. En France, l'engagement des collaborateurs stagne autour de 8 %.",
         source: "Gallup — State of the Global Workplace 2026",
         anim: { beats: [
-          { ico: "🧑‍💼", t: "« Manager, c'est du gâteau ! »… vraiment ?" },
-          { ico: "📉", t: "Boum : −9 points d'engagement en 3 ans.", big: true },
-          { ico: "🥪", t: "Le manager-sandwich : pressé des deux côtés." }
+          { ico: "🧑‍💼", tag: "La question", t: "« Manager, c'est valorisant ! »… du moins, ça l'était." },
+          { ico: "📉", tag: "Le chiffre", t: "L'engagement des managers chute de 31 % à 22 % en 3 ans.", big: true },
+          { ico: "📉", tag: "Le contexte", t: "Dont −5 points rien qu'en 2024-2025 : la plus forte baisse annuelle jamais mesurée par Gallup." },
+          { ico: "🥪", tag: "Pourquoi", t: "L'effet sandwich : coincés entre la pression de la direction et le désengagement de leurs équipes." },
+          { ico: "💡", tag: "À retenir", t: "Un manager démotivé démotive son équipe. Soutenir les managers, c'est protéger tout le collectif." }
         ] }
       },
       {
@@ -48,9 +51,11 @@ module.exports = [
         explain: "La quasi-parité au niveau manager (48 %) ne se traduit pas en haut de la pyramide : seule une place sur quatre en comité de direction revient à une femme.",
         source: "Étude 2026 relayée par Mediavenir",
         anim: { beats: [
-          { ico: "👩‍💼", t: "48 % des managers sont des femmes. La parité, presque !" },
-          { ico: "🚪", t: "Mais au comité de direction… 24 % seulement.", big: true },
-          { ico: "🪜", t: "Le plafond de verre a oublié de mettre l'ascenseur." }
+          { ico: "👩‍💼", tag: "La question", t: "48 % des managers sont des femmes. La parité serait-elle gagnée ?" },
+          { ico: "🚪", tag: "Le chiffre", t: "En comité de direction : seulement 24 % de femmes.", big: true },
+          { ico: "⚖️", tag: "Le contexte", t: "Deux fois moins qu'à l'échelon manager : la part chute à mesure qu'on s'élève dans la hiérarchie." },
+          { ico: "🪜", tag: "Pourquoi", t: "Plafond de verre : mobilité freinée, réseaux moins ouverts, biais de cooptation au sommet." },
+          { ico: "💡", tag: "À retenir", t: "La parité se joue dans les promotions vers le top, pas seulement au moment de l'embauche." }
         ] }
       },
       {
@@ -69,9 +74,11 @@ module.exports = [
         explain: "Enquête menée auprès de 1 200 managers. La charge déborde largement le temps de travail : 31 % à 50h+/semaine, 51 % sous pression régulière, 3 sur 4 y pensent hors travail. L'affirmation D est fausse.",
         source: "Lab des Futurs × Ipsos, 2026",
         anim: { beats: [
-          { ico: "🧑‍💼", t: "18 h : le manager quitte le bureau. Déconnexion… ?" },
-          { ico: "🧠", t: "3 managers sur 4 pensent encore au taf.", big: true },
-          { ico: "🐑", t: "Même le mouton qu'il compte a un reporting à rendre." }
+          { ico: "🧑‍💼", tag: "La question", t: "18 h, le manager ferme l'ordinateur. Déconnexion réussie ?" },
+          { ico: "🧠", tag: "Le chiffre", t: "3 managers sur 4 continuent à penser au travail… hors du travail.", big: true },
+          { ico: "⏰", tag: "Le contexte", t: "S'y ajoutent 31 % qui font 50 h et plus par semaine, et 51 % qui travaillent régulièrement sous pression." },
+          { ico: "📱", tag: "Pourquoi", t: "Hyper-connexion, sur-sollicitation, réunions en rafale : la charge mentale déborde le bureau." },
+          { ico: "💡", tag: "À retenir", t: "Droit à la déconnexion et priorisation ne sont pas un luxe, mais une hygiène de performance durable." }
         ] }
       },
       {
@@ -90,9 +97,11 @@ module.exports = [
         explain: "En 2025, seules 9 % des entreprises ont réduit le télétravail : 2026 confirme la stabilité. Utilisé par près d'un salarié sur deux (49 %), il affiche 92 % de satisfaction.",
         source: "Capstan / SFR Business, 2026",
         anim: { beats: [
-          { ico: "🏢", t: "« On supprime le télétravail ! » criaient certains." },
-          { ico: "🏡", t: "94 % des entreprises : on ne touche à rien.", big: true },
-          { ico: "🐈", t: "Le chat du télétravailleur peut souffler." }
+          { ico: "🏢", tag: "La question", t: "« 2026, l'année du grand retour au bureau ! »… pariaient certains." },
+          { ico: "🏡", tag: "Le chiffre", t: "94 % des entreprises maintiennent leur politique de télétravail.", big: true },
+          { ico: "📊", tag: "Le contexte", t: "En 2025, seules 9 % l'avaient réduit. La tendance de fond, c'est la stabilité." },
+          { ico: "🤝", tag: "Pourquoi", t: "Près d'un salarié sur deux l'utilise, avec 92 % de satisfaction : y toucher coûterait cher en attractivité." },
+          { ico: "💡", tag: "À retenir", t: "Le vrai sujet n'est plus « présentiel ou pas », mais comment bien manager en mode hybride." }
         ] }
       },
       {
@@ -111,9 +120,11 @@ module.exports = [
         explain: "L'IA se généralise (73 %+) et tire l'emploi (166 000+ offres). Le prompt engineering est clé, mais les formations pour managers sont conçues sans prérequis technique : il s'agit de piloter, pas de coder. L'affirmation D est fausse.",
         source: "Baromètre Syntec Numérique / Dynexio, 2026",
         anim: { beats: [
-          { ico: "🧑‍💼", t: "« L'IA ? Pas dans MON entreprise. »" },
-          { ico: "🤖", t: "73 %+ des grandes entreprises l'ont déjà adoptée.", big: true },
-          { ico: "💡", t: "Pas besoin d'être data scientist : juste savoir piloter." }
+          { ico: "🧑‍💼", tag: "La question", t: "« L'IA, c'est pour les geeks, pas pour mon service. »" },
+          { ico: "🤖", tag: "Le chiffre", t: "73 %+ des grandes entreprises ont déjà déployé ou testé un assistant IA.", big: true },
+          { ico: "🇫🇷", tag: "Le contexte", t: "La France est même en tête en Europe : plus de 166 000 offres d'emploi liées à l'IA en 2026." },
+          { ico: "🧭", tag: "Pourquoi", t: "Piloter l'IA devient une compétence managériale de base — sans besoin d'être data scientist." },
+          { ico: "💡", tag: "À retenir", t: "Le rôle du manager : cadrer les usages, monter l'équipe en compétence, garder l'humain aux commandes." }
         ] }
       }
     ]
@@ -136,9 +147,11 @@ module.exports = [
         explain: "L'adoption a explosé : près d'un salarié sur deux y a recours. Mais l'usage vraiment régulier (hebdomadaire) ne concerne encore qu'un quart d'entre eux.",
         source: "KPMG / OpinionWay, 2026",
         anim: { beats: [
-          { ico: "🧑‍💻", t: "« Qui utilise l'IA au boulot ? » Silence dans l'open-space…" },
-          { ico: "✋", t: "Près d'un salarié sur deux lève la main (47 %).", big: true },
-          { ico: "🤫", t: "…et certains la cachent encore sous le clavier." }
+          { ico: "🧑‍💻", tag: "La question", t: "« Qui utilise vraiment l'IA au bureau ? »" },
+          { ico: "✋", tag: "Le chiffre", t: "Près d'un salarié du privé sur deux : environ 47 %.", big: true },
+          { ico: "📈", tag: "Le contexte", t: "Mais l'usage régulier (au moins une fois par semaine) ne concerne que 24 % : l'adoption est encore jeune." },
+          { ico: "🤫", tag: "Pourquoi", t: "Beaucoup testent seuls, sans cadre ni formation : l'usage précède l'organisation." },
+          { ico: "💡", tag: "À retenir", t: "L'enjeu n'est plus d'adopter l'IA, mais d'en structurer et d'en fiabiliser l'usage au quotidien." }
         ] }
       },
       {
@@ -152,9 +165,11 @@ module.exports = [
         explain: "L'IA se diffuse très inégalement : quasi généralisée chez les cadres, elle reste minoritaire chez les ouvriers (29 %). Un enjeu d'équité pour les managers.",
         source: "Étude adoption IA France, 2026",
         anim: { beats: [
-          { ico: "🧑‍💼", t: "Le cadre : « L'IA ? Tous les jours ! » (78 %)" },
-          { ico: "👷", t: "L'ouvrier, lui : 29 %. Grand écart.", big: true },
-          { ico: "🌉", t: "Reste à construire le pont entre les deux." }
+          { ico: "🧑‍💼", tag: "La question", t: "L'IA au travail, tout le monde à la même enseigne ?" },
+          { ico: "👷", tag: "Le chiffre", t: "78 % des cadres l'utilisent… contre 29 % des ouvriers.", big: true },
+          { ico: "📊", tag: "Le contexte", t: "Un rapport du simple au triple : la fracture de l'IA est d'abord socioprofessionnelle." },
+          { ico: "🖥️", tag: "Pourquoi", t: "Accès aux outils, temps disponible, formation : tout se concentre sur les métiers de bureau." },
+          { ico: "💡", tag: "À retenir", t: "Sans effort ciblé vers le terrain, l'IA risque de creuser les inégalités au lieu de les réduire." }
         ] }
       },
       {
@@ -168,9 +183,11 @@ module.exports = [
         explain: "L'écart est béant entre l'usage (près d'un sur deux) et la formation (12 %). C'est LE principal enjeu RH de 2026.",
         source: "Baromètre formation IA, 2026",
         anim: { beats: [
-          { ico: "🎓", t: "« Vous êtes formés à l'IA ? »" },
-          { ico: "🙋", t: "12 % lèvent la main. Douze.", big: true },
-          { ico: "🏊", t: "On jette tout le monde à l'eau… sans cours de natation." }
+          { ico: "🎓", tag: "La question", t: "L'IA arrive partout. Et la formation, elle suit ?" },
+          { ico: "🙋", tag: "Le chiffre", t: "Seulement 12 % des salariés ont été formés à l'IA en entreprise.", big: true },
+          { ico: "⚖️", tag: "Le contexte", t: "Alors même que l'AI Act impose désormais un socle minimal de compétences (« AI literacy »)." },
+          { ico: "🏊", tag: "Pourquoi", t: "Résultat : on manie des outils puissants sans en maîtriser ni les limites ni les risques." },
+          { ico: "💡", tag: "À retenir", t: "Former, c'est réduire les erreurs, les fuites de données… et la peur de l'outil." }
         ] }
       },
       {
@@ -184,9 +201,11 @@ module.exports = [
         explain: "Deux tiers des salariés utilisent l'IA « en douce ». D'où l'intérêt d'une charte d'usage claire plutôt que d'une interdiction inapplicable.",
         source: "Étude Shadow AI, 2026",
         anim: { beats: [
-          { ico: "🕵️", t: "Le « shadow AI » : l'IA utilisée en cachette du chef." },
-          { ico: "🙈", t: "68 % des salariés le font !", big: true },
-          { ico: "📋", t: "Mieux vaut une charte claire qu'une chasse aux sorcières." }
+          { ico: "🕵️", tag: "La question", t: "Vos équipes utilisent-elles l'IA… à votre insu ?" },
+          { ico: "🙈", tag: "Le chiffre", t: "68 % des collaborateurs le font sans prévenir leur hiérarchie.", big: true },
+          { ico: "🔓", tag: "Le contexte", t: "C'est le « shadow AI » : des données parfois sensibles copiées dans des outils non validés." },
+          { ico: "🚫", tag: "Pourquoi", t: "Interdire ne fonctionne pas : les collaborateurs contournent la règle pour gagner du temps." },
+          { ico: "💡", tag: "À retenir", t: "Une charte d'usage claire vaut mieux qu'une interdiction inapplicable et une prise de risque cachée." }
         ] }
       },
       {
@@ -200,9 +219,11 @@ module.exports = [
         explain: "Le gain de temps est réel et mesurable, mais concentré sur les profils déjà les plus équipés et formés — ce qui creuse encore l'écart d'usage.",
         source: "INSEE, 2026",
         anim: { beats: [
-          { ico: "⏰", t: "Un cadre lance Copilot un lundi matin…" },
-          { ico: "🚀", t: "+11 heures gagnées par semaine !", big: true },
-          { ico: "☕", t: "De quoi (enfin) prendre le café sans culpabiliser." }
+          { ico: "⏰", tag: "La question", t: "Combien de temps l'IA fait-elle vraiment gagner ?" },
+          { ico: "🚀", tag: "Le chiffre", t: "Jusqu'à 11 heures par semaine pour les cadres utilisant Copilot (INSEE).", big: true },
+          { ico: "✍️", tag: "Le contexte", t: "Surtout sur les tâches répétitives : rédaction, synthèse, e-mails, recherche d'informations." },
+          { ico: "⚠️", tag: "Pourquoi", t: "Mais ce gain profite d'abord aux profils déjà équipés et formés — d'où le risque d'écart qui se creuse." },
+          { ico: "💡", tag: "À retenir", t: "Bien déployée, l'IA libère du temps pour ce qui compte : décider, créer, accompagner." }
         ] }
       },
       {
@@ -216,9 +237,11 @@ module.exports = [
         explain: "La peur « forte » reste minoritaire (1 sur 10), même si 45 % des salariés et 61 % des cadres redoutent un remplacement au moins partiel.",
         source: "ADP — People at Work 2026",
         anim: { beats: [
-          { ico: "😱", t: "« L'IA va tous nous remplacer ! »" },
-          { ico: "😌", t: "Seulement 10 % le craignent vraiment.", big: true },
-          { ico: "👀", t: "La panique est surtout chez les moins de 40 ans." }
+          { ico: "😱", tag: "La question", t: "« L'IA va tous nous remplacer ! » — la panique est-elle justifiée ?" },
+          { ico: "😌", tag: "Le chiffre", t: "En réalité, seuls ~10 % des salariés le craignent fortement.", big: true },
+          { ico: "👀", tag: "Le contexte", t: "La peur progresse tout de même (+2 pts vs 2025) et se concentre chez les moins de 40 ans." },
+          { ico: "🧩", tag: "Pourquoi", t: "Nuance : 45 % des salariés et 61 % des cadres redoutent un remplacement au moins partiel." },
+          { ico: "💡", tag: "À retenir", t: "La transparence et la formation désamorcent l'anxiété bien plus que le silence." }
         ] }
       },
       {
@@ -232,9 +255,11 @@ module.exports = [
         explain: "L'IA transforme les métiers plus qu'elle ne les supprime : la plupart des postes voient certaines tâches automatisées, pas l'emploi entier.",
         source: "Direction générale du Trésor, 2026",
         anim: { beats: [
-          { ico: "🤖", t: "« Les robots vont prendre tous nos jobs ! »" },
-          { ico: "✂️", t: "5 % des emplois seulement sont 100 % automatisables.", big: true },
-          { ico: "🧩", t: "L'IA recompose les tâches, elle ne gomme pas le métier." }
+          { ico: "🤖", tag: "La question", t: "Combien de métiers l'IA va-t-elle vraiment supprimer ?" },
+          { ico: "✂️", tag: "Le chiffre", t: "Seulement 5 % des emplois sont jugés totalement automatisables (DG Trésor).", big: true },
+          { ico: "🧩", tag: "Le contexte", t: "La grande majorité évolue par recomposition : certaines tâches automatisées, mais pas le poste entier." },
+          { ico: "🔄", tag: "Pourquoi", t: "L'IA transforme le contenu du travail bien plus qu'elle ne le fait disparaître." },
+          { ico: "💡", tag: "À retenir", t: "La bonne question managériale : quelles tâches déléguer à l'IA pour recentrer l'humain sur l'essentiel ?" }
         ] }
       },
       {
@@ -253,9 +278,11 @@ module.exports = [
         explain: "Les bénéfices sont documentés, mais freinés par les compétences : 60 % des PME n'ont AUCUNE stratégie IA formalisée. L'affirmation D est donc fausse.",
         source: "McKinsey / baromètres IA entreprise, 2026",
         anim: { beats: [
-          { ico: "📊", t: "Les entreprises qui déploient l'IA mesurent…" },
-          { ico: "📈", t: "+15 à 30 % de productivité !", big: true },
-          { ico: "🧑‍🏫", t: "Frein n°1 : le manque de compétences, pas la techno." }
+          { ico: "📊", tag: "La question", t: "Déployer l'IA, ça rapporte vraiment à l'entreprise ?" },
+          { ico: "📈", tag: "Le chiffre", t: "+15 à 30 % de productivité sur les processus clés.", big: true },
+          { ico: "✅", tag: "Le contexte", t: "66 % des organisations qui déploient l'IA constatent une hausse mesurable de leur productivité." },
+          { ico: "🧑‍🏫", tag: "Pourquoi", t: "Le frein n°1 n'est pas la techno mais les compétences (61 % des dirigeants) ; 60 % des PME n'ont aucune stratégie IA." },
+          { ico: "💡", tag: "À retenir", t: "Le retour sur investissement de l'IA dépend surtout de l'accompagnement humain, pas de l'outil seul." }
         ] }
       },
       {
@@ -274,9 +301,11 @@ module.exports = [
         explain: "L'IA au travail est de plus en plus encadrée : l'affirmation D est fausse. La charte IA est un document de gouvernance clé en 2026.",
         source: "AI Act (UE) & CNIL, 2026",
         anim: { beats: [
-          { ico: "📜", t: "« L'IA au boulot, c'est la jungle ? »" },
-          { ico: "⚖️", t: "L'AI Act impose un socle de compétences (AI literacy).", big: true },
-          { ico: "📝", t: "La charte IA devient le nouveau règlement intérieur." }
+          { ico: "📜", tag: "La question", t: "L'IA au travail, c'est encore le Far West sans règles ?" },
+          { ico: "⚖️", tag: "Le chiffre", t: "Non : l'AI Act impose un socle de compétences IA aux salariés concernés.", big: true },
+          { ico: "📝", tag: "Le contexte", t: "S'y ajoutent le RGPD, la directive NIS2, et la CNIL qui en fait un point de contrôle prioritaire." },
+          { ico: "🛡️", tag: "Pourquoi", t: "Cyberassureurs et régulateurs poussent à formaliser une charte d'usage claire et opposable." },
+          { ico: "💡", tag: "À retenir", t: "La charte IA devient le nouveau règlement intérieur : à écrire avant l'incident, pas après." }
         ] }
       },
       {
@@ -290,9 +319,11 @@ module.exports = [
         explain: "L'opinion est nettement pessimiste (plus des 3/4), alors que les analyses économiques penchent plutôt vers une transformation des métiers que vers leur disparition massive.",
         source: "Sondage opinion France (Odoxa), 2026",
         anim: { beats: [
-          { ico: "🇫🇷", t: "« L'IA va détruire plus d'emplois qu'en créer ? »" },
-          { ico: "🙋", t: "77 % des Français le pensent.", big: true },
-          { ico: "🔮", t: "Les économistes, eux, parient sur la transformation." }
+          { ico: "🇫🇷", tag: "La question", t: "Les Français, optimistes ou pessimistes sur l'IA et l'emploi ?" },
+          { ico: "🙋", tag: "Le chiffre", t: "77 % pensent qu'elle détruira plus d'emplois qu'elle n'en créera.", big: true },
+          { ico: "🔮", tag: "Le contexte", t: "Un pessimisme net… que les analyses économiques ne confirment pas vraiment à ce jour." },
+          { ico: "🧩", tag: "Pourquoi", t: "Les études penchent plutôt pour une transformation des métiers qu'une disparition massive d'emplois." },
+          { ico: "💡", tag: "À retenir", t: "Le rôle du manager : donner du sens et de la visibilité pour transformer la peur en projet d'équipe." }
         ] }
       }
     ]

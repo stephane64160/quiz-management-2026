@@ -167,6 +167,10 @@
     border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:14px solid var(--line-strong);}
   .anim-bubble.pop{animation:bubblePop .45s cubic-bezier(.2,1.4,.4,1) both;}
   @keyframes bubblePop{from{transform:scale(.7) translateY(12px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+  .anim-tag{font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700;visibility:hidden;}
+  .anim-tag.pop{animation:bubblePop .4s cubic-bezier(.2,1.4,.4,1) both;}
+  .anim-bubble.key{border-color:var(--gold);background:linear-gradient(180deg,var(--gold-soft),var(--card));box-shadow:0 0 0 1px var(--gold),0 14px 40px -18px rgba(226,173,82,.6);}
+  .anim-bubble.key::after{border-bottom-color:var(--gold);}
   .anim-big{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;z-index:3;pointer-events:none;
     font-family:var(--mono);font-weight:800;font-size:clamp(64px,15vw,170px);color:var(--gold);
     text-shadow:0 0 40px rgba(226,173,82,.5);font-variant-numeric:tabular-nums;white-space:nowrap;}
@@ -273,6 +277,7 @@
   <div class="anim-big" id="animBig"></div>
   <div class="anim-stage">
     <div class="anim-ico" id="animIco">🎬</div>
+    <div class="anim-tag" id="animTag"></div>
     <div class="anim-bubble" id="animBubble">L'explication animée…</div>
   </div>
   <div class="anim-end" id="animEnd">
@@ -595,24 +600,29 @@ function setIco(e){ const el=$('animIco'); el.textContent=e; el.classList.remove
 function shakeIco(){ const el=$('animIco'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
 function setBubble(t){ const el=$('animBubble'); el.textContent=t; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 function clearTimers(){ anim.timers.forEach(clearTimeout); anim.timers=[]; }
+function setTag(t){ const el=$('animTag'); if(!t){ el.textContent=''; el.style.visibility='hidden'; return; }
+  el.textContent=t; el.style.visibility='visible'; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+function beatDur(t){ return Math.min(5000, Math.max(3200, 2200 + (t||'').length*28)); } // duree = temps de lecture
 function playAnim(data, fig){
   if(!data||!data.beats||!data.beats.length) return;
   clearTimers(); stopConfetti();
   anim.data=data; anim.fig=fig||'';
   const ov=$('animOv'); ov.classList.add('on'); ov.setAttribute('aria-hidden','false');
-  $('animEnd').classList.remove('show'); $('animBig').classList.remove('show');
-  setIco('🎬'); setBubble("Et si on l'expliquait… en dessin animé ?");
-  const INTRO=1500, DUR=4200, OUTRO=1700;
-  const beats=data.beats;
-  beats.forEach((b,i)=>{ anim.timers.push(setTimeout(()=>showBeat(i), INTRO+i*DUR)); });
-  anim.timers.push(setTimeout(()=>{ $('animEnd').classList.add('show'); }, INTRO+beats.length*DUR+OUTRO));
-  const total=INTRO+beats.length*DUR+OUTRO;
+  $('animEnd').classList.remove('show'); $('animBig').classList.remove('show'); $('animBubble').classList.remove('key');
+  setTag(''); setIco('🎬'); setBubble("Prenons 20 secondes pour bien comprendre ce chiffre…");
+  const beats=data.beats, INTRO=1400, OUTRO=1800;
+  const durs=beats.map(b=>beatDur(b.t));
+  let t=INTRO;
+  beats.forEach((b,i)=>{ anim.timers.push(setTimeout(()=>showBeat(i), t)); t+=durs[i]; });
+  anim.timers.push(setTimeout(()=>{ $('animEnd').classList.add('show'); }, t+OUTRO));
+  const total=t+OUTRO;
   const prog=$('animProg'); prog.style.transition='none'; prog.style.width='0%';
   void prog.offsetWidth; prog.style.transition='width '+total+'ms linear'; prog.style.width='100%';
 }
 function showBeat(i){
-  const b=anim.data.beats[i];
-  setIco(b.ico||'💬'); setBubble(b.t||'');
+  const b=anim.data.beats[i], last=i===anim.data.beats.length-1;
+  setTag(b.tag||''); setIco(b.ico||'💬'); setBubble(b.t||'');
+  $('animBubble').classList.toggle('key', last);
   if(b.big){ const big=$('animBig'); big.textContent=anim.fig; big.classList.remove('show'); void big.offsetWidth; big.classList.add('show'); shakeIco(); fireConfetti(); }
 }
 function closeAnim(){ clearTimers(); stopConfetti(); const ov=$('animOv'); ov.classList.remove('on'); ov.setAttribute('aria-hidden','true'); $('animProg').style.width='0%'; }
