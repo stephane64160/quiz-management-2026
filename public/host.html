@@ -143,6 +143,43 @@
   .wall-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;align-items:center;}
 
   .foot{text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:26px;}
+
+  /* -------- Explication animée (overlay) -------- */
+  .anim-launch{margin-top:16px;}
+  .anim-ov{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 35%, #1a2130, #0a0d13 75%);overflow:hidden;}
+  .anim-ov.on{display:flex;animation:ovIn .3s ease both;}
+  @keyframes ovIn{from{opacity:0;}to{opacity:1;}}
+  .anim-confetti{position:absolute;inset:0;z-index:1;pointer-events:none;}
+  .anim-skip{position:absolute;top:20px;right:22px;z-index:4;font-family:var(--mono);font-size:13px;color:var(--muted);
+    background:var(--card);border:1px solid var(--line-strong);padding:9px 16px;border-radius:99px;cursor:pointer;}
+  .anim-skip:hover{color:var(--ink);border-color:var(--gold);}
+  .anim-stage{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:24px;
+    padding:24px;max-width:760px;text-align:center;}
+  .anim-ico{font-size:clamp(90px,17vw,180px);line-height:1;filter:drop-shadow(0 10px 30px rgba(0,0,0,.5));}
+  .anim-ico.pop{animation:icoPop .6s cubic-bezier(.2,1.5,.35,1) both;}
+  .anim-ico.shake{animation:icoShake .6s ease both;}
+  @keyframes icoPop{0%{transform:scale(.2) rotate(-14deg);opacity:0;}60%{transform:scale(1.18) rotate(6deg);opacity:1;}100%{transform:scale(1) rotate(0);}}
+  @keyframes icoShake{0%,100%{transform:translateX(0) rotate(0);}20%{transform:translateX(-10px) rotate(-5deg);}40%{transform:translateX(10px) rotate(5deg);}60%{transform:translateX(-8px) rotate(-4deg);}80%{transform:translateX(8px) rotate(4deg);}}
+  .anim-bubble{position:relative;background:var(--card);border:1.5px solid var(--line-strong);color:var(--ink);
+    font-family:var(--serif);font-size:clamp(20px,3vw,30px);line-height:1.3;padding:20px 26px;border-radius:20px;max-width:640px;text-wrap:balance;}
+  .anim-bubble::after{content:"";position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+    border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:14px solid var(--line-strong);}
+  .anim-bubble.pop{animation:bubblePop .45s cubic-bezier(.2,1.4,.4,1) both;}
+  @keyframes bubblePop{from{transform:scale(.7) translateY(12px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+  .anim-big{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;z-index:3;pointer-events:none;
+    font-family:var(--mono);font-weight:800;font-size:clamp(64px,15vw,170px);color:var(--gold);
+    text-shadow:0 0 40px rgba(226,173,82,.5);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .anim-big.show{animation:bigPop 1.1s cubic-bezier(.15,1.6,.35,1) both;}
+  @keyframes bigPop{0%{transform:translate(-50%,-50%) scale(.2) rotate(-8deg);opacity:0;}
+    35%{transform:translate(-50%,-50%) scale(1.15) rotate(3deg);opacity:1;}
+    70%{transform:translate(-50%,-50%) scale(1);opacity:1;}
+    100%{transform:translate(-50%,-52%) scale(1);opacity:0;}}
+  .anim-progwrap{position:absolute;bottom:0;left:0;right:0;height:5px;background:rgba(255,255,255,.08);z-index:4;}
+  .anim-prog{height:100%;width:0;background:var(--gold);}
+  .anim-end{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:5;display:none;gap:12px;}
+  .anim-end.show{display:flex;animation:bubblePop .4s ease both;}
+  @media (prefers-reduced-motion: reduce){ .anim-ico,.anim-bubble,.anim-big{animation-duration:.01ms !important;} }
 </style>
 </head>
 <body>
@@ -227,6 +264,22 @@
   </section>
 
   <p class="foot" id="foot">Sources vérifiables dans le fichier quiz-data.js — millésime 2025-2026.</p>
+</div>
+
+<!-- Overlay "explication animée" -->
+<div class="anim-ov" id="animOv" aria-hidden="true">
+  <canvas class="anim-confetti" id="animConfetti"></canvas>
+  <button class="anim-skip" id="animSkip">Passer ✕</button>
+  <div class="anim-big" id="animBig"></div>
+  <div class="anim-stage">
+    <div class="anim-ico" id="animIco">🎬</div>
+    <div class="anim-bubble" id="animBubble">L'explication animée…</div>
+  </div>
+  <div class="anim-end" id="animEnd">
+    <button class="btn btn-primary" id="animReplay">↺ Revoir</button>
+    <button class="btn btn-ghost" id="animClose">Fermer</button>
+  </div>
+  <div class="anim-progwrap"><div class="anim-prog" id="animProg"></div></div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -316,8 +369,11 @@ function renderLive(){
 
   const slot=$('revealSlot');
   if(isReveal&&STATE.reveal){ const rv=STATE.reveal;
+    const hasAnim=rv.anim&&rv.anim.beats&&rv.anim.beats.length;
     slot.innerHTML='<div class="reveal"><div><span class="fig">'+esc(rv.fig)+'</span> <span class="lab">'+esc(rv.figLabel)+'</span></div>'+
-      '<p class="exp">'+esc(rv.explain)+'</p><div class="src">Source : '+esc(rv.source)+'</div></div>';
+      '<p class="exp">'+esc(rv.explain)+'</p><div class="src">Source : '+esc(rv.source)+'</div>'+
+      (hasAnim?'<button class="btn btn-primary anim-launch" id="animLaunch">▶ Explication animée · ~15 s</button>':'')+'</div>';
+    if(hasAnim){ const al=$('animLaunch'); al.onclick=()=>playAnim(rv.anim, rv.fig); }
   } else slot.innerHTML='';
 
   const c=$('controls'); c.innerHTML='';
@@ -527,6 +583,54 @@ document.querySelectorAll('#shapeBtns .shape-btn').forEach(b=>{
 });
 // Recalcul du nuage au redimensionnement de la fenêtre
 let rszT; window.addEventListener('resize',()=>{ clearTimeout(rszT); rszT=setTimeout(()=>{ if(STATE&&STATE.mode==='wordwall') renderCloud(); },300); });
+
+/* ---- Explication animée (mini "dessin animé") ---- */
+const anim={timers:[], data:null, fig:''};
+function setIco(e){ const el=$('animIco'); el.textContent=e; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+function shakeIco(){ const el=$('animIco'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+function setBubble(t){ const el=$('animBubble'); el.textContent=t; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+function clearTimers(){ anim.timers.forEach(clearTimeout); anim.timers=[]; }
+function playAnim(data, fig){
+  if(!data||!data.beats||!data.beats.length) return;
+  clearTimers(); stopConfetti();
+  anim.data=data; anim.fig=fig||'';
+  const ov=$('animOv'); ov.classList.add('on'); ov.setAttribute('aria-hidden','false');
+  $('animEnd').classList.remove('show'); $('animBig').classList.remove('show');
+  setIco('🎬'); setBubble("Et si on l'expliquait… en dessin animé ?");
+  const INTRO=1500, DUR=4200, OUTRO=1700;
+  const beats=data.beats;
+  beats.forEach((b,i)=>{ anim.timers.push(setTimeout(()=>showBeat(i), INTRO+i*DUR)); });
+  anim.timers.push(setTimeout(()=>{ $('animEnd').classList.add('show'); }, INTRO+beats.length*DUR+OUTRO));
+  const total=INTRO+beats.length*DUR+OUTRO;
+  const prog=$('animProg'); prog.style.transition='none'; prog.style.width='0%';
+  void prog.offsetWidth; prog.style.transition='width '+total+'ms linear'; prog.style.width='100%';
+}
+function showBeat(i){
+  const b=anim.data.beats[i];
+  setIco(b.ico||'💬'); setBubble(b.t||'');
+  if(b.big){ const big=$('animBig'); big.textContent=anim.fig; big.classList.remove('show'); void big.offsetWidth; big.classList.add('show'); shakeIco(); fireConfetti(); }
+}
+function closeAnim(){ clearTimers(); stopConfetti(); const ov=$('animOv'); ov.classList.remove('on'); ov.setAttribute('aria-hidden','true'); $('animProg').style.width='0%'; }
+$('animSkip').onclick=closeAnim;
+$('animClose').onclick=closeAnim;
+$('animReplay').onclick=()=>playAnim(anim.data, anim.fig);
+
+// confettis
+let confRAF=0, confParts=[];
+function fireConfetti(){
+  const c=$('animConfetti'), ov=$('animOv'); c.width=ov.clientWidth; c.height=ov.clientHeight;
+  const cols=['#e2ad52','#4de1c1','#5cc8ff','#ff8fab','#c792ea','#8ce99a','#ffd166'];
+  for(let i=0;i<80;i++) confParts.push({x:c.width/2,y:c.height*0.42,vx:(Math.random()-0.5)*11,vy:(Math.random()-1.15)*12,g:0.3,col:cols[i%cols.length],s:6+Math.random()*7,a:1,rot:Math.random()*6,vr:(Math.random()-0.5)*0.5});
+  if(!confRAF){ const x=c.getContext('2d'); confRAF=requestAnimationFrame(()=>confStep(x,c)); }
+}
+function confStep(x,c){
+  x.clearRect(0,0,c.width,c.height); let alive=false;
+  for(const p of confParts){ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.a-=0.011;
+    if(p.a>0&&p.y<c.height+30){ alive=true; x.save(); x.globalAlpha=Math.max(0,p.a); x.translate(p.x,p.y); x.rotate(p.rot); x.fillStyle=p.col; x.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.62); x.restore(); } }
+  confParts=confParts.filter(p=>p.a>0&&p.y<c.height+30);
+  if(alive){ confRAF=requestAnimationFrame(()=>confStep(x,c)); } else { confRAF=0; x.clearRect(0,0,c.width,c.height); }
+}
+function stopConfetti(){ if(confRAF){cancelAnimationFrame(confRAF);confRAF=0;} confParts=[]; const c=$('animConfetti'); if(c){const x=c.getContext('2d'); x&&x.clearRect(0,0,c.width,c.height);} }
 </script>
 </body>
 </html>

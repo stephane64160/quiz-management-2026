@@ -80,7 +80,7 @@ function publicQuestion(i) {
 function revealData(i) {
   const q = S.questions[i];
   if (!q) return null;
-  return { index: i, correct: q.correct, explain: q.explain, fig: q.fig, figLabel: q.figLabel, source: q.source };
+  return { index: i, correct: q.correct, explain: q.explain, fig: q.fig, figLabel: q.figLabel, source: q.source, anim: q.anim || null };
 }
 function isCorrect(i, choice) {
   const c = S.questions[i].correct;
